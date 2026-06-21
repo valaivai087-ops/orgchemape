@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>OrgChemMap｜有機化學地圖</title>
+<style>
+:root{
+  --bg:#fff;--bg2:#f7f8fc;--bg3:#eef0f8;
+  --ink:#0d1626;--ink2:#2c3a56;--ink3:#677089;
+  --navy:#0f1d3e;--teal:#0d7d8c;--teal-l:#cdf0f3;
+  --gold:#b8860b;--gold-l:#fef6e3;
+  --green:#15803d;--green-l:#dcfce7;
+  --rose:#be123c;--rose-l:#ffe4e6;
+  --violet:#7c3aed;--violet-l:#ede9fe;
+  --blue:#1e40af;--blue-l:#dbeafe;
+  --amber:#b45309;--amber-l:#fef3c7;
+  --border:#dde2ef;--r:12px;
+  --sh:0 2px 12px rgba(13,22,38,.08);
+  --sh2:0 8px 32px rgba(13,22,38,.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  background:#fff;color:var(--ink);font-size:18px;line-height:1.75}
+button{cursor:pointer;font:inherit;border:none;background:none}
+.nav{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.97);
+  backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-i{max-width:1400px;margin:auto;padding:0 20px;height:58px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:34px;height:34px;border-radius:9px;
+  background:linear-gradient(135deg,#0f1d3e,#0d7d8c);
+  display:grid;place-items:center;font-size:20px}
+.logo-txt{font-weight:900;font-size:16px;color:var(--teal)}
+.nav-tabs{display:flex;gap:2px;flex-wrap:wrap}
+.ntab{padding:5px 9px;border-radius:7px;font-size:14px;font-weight:700;
+  color:var(--ink2);transition:.15s}
+.ntab:hover{background:var(--teal-l);color:var(--teal)}
+
+.hero{background:#fff;border-bottom:2px solid var(--border);padding:48px 24px 36px;text-align:center}
+.h-badge{display:inline-block;padding:5px 14px;border-radius:999px;
+  font-size:13px;font-weight:900;letter-spacing:.06em;
+  border:1.5px solid var(--teal);color:var(--teal);margin-bottom:18px;background:var(--teal-l)}
+.hero h1{font-size:clamp(26px,4.5vw,48px);font-weight:900;line-height:1.3;margin-bottom:12px;color:var(--navy)}
+.hero h1 .gold{color:var(--gold)}
+.hero-sub{max-width:680px;margin:0 auto 16px;font-size:17px;color:var(--ink2);line-height:1.9}
+.hero-stats{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+.hstat{padding:10px 16px;border-radius:10px;background:var(--bg2);border:1px solid var(--border);text-align:center;min-width:90px}
+.hstat-n{font-size:22px;font-weight:900;color:var(--teal)}
+.hstat-l{font-size:11px;color:var(--ink3);margin-top:2px}
+
+.wrap{max-width:1400px;margin:0 auto;padding:0 20px}
+.sec{padding:44px 0 32px}
+.sh .etag{font-size:13px;font-weight:900;letter-spacing:.06em;color:var(--teal);margin-bottom:8px}
+.sh h2{font-size:clamp(21px,2.8vw,32px);font-weight:900;margin-bottom:6px;color:var(--navy)}
+.sh p{color:var(--ink2);font-size:16px;line-height:1.9;max-width:780px}
+.divider{height:1px;background:var(--border)}
+
+.philosophy-box{padding:24px 26px;border-radius:var(--r);background:var(--bg2);border:2px solid var(--teal);text-align:center;margin-bottom:20px}
+.philosophy-tagline{font-size:21px;font-weight:900;color:var(--navy);margin-bottom:16px}
+.philosophy-text{font-size:16px;color:var(--ink2);line-height:1.9;text-align:left;margin-top:14px}
+
+.map-selector{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:8px}
+.map-card{padding:18px 12px;border:2px solid var(--border);border-radius:var(--r);
+  background:#fff;cursor:pointer;transition:.2s;box-shadow:var(--sh);text-align:center;position:relative;overflow:hidden}
+.map-card::before{content:'';position:absolute;inset:0;opacity:0;transition:.3s;
+  background:radial-gradient(circle at 30% 20%, var(--mc, var(--teal)) 0%, transparent 60%)}
+.map-card:hover{transform:translateY(-3px)}
+.map-card:hover::before{opacity:.12}
+.map-card.sel{border-color:var(--mc, var(--teal));background:var(--bg2)}
+.map-card.sel::before{opacity:.18}
+.map-card-icon{font-size:32px;margin-bottom:8px;position:relative;z-index:1}
+.map-card-zh{font-size:15px;font-weight:800;color:var(--ink);position:relative;z-index:1}
+
+.map-panel{display:none;border:1px solid var(--border);border-radius:var(--r);
+  background:#fff;box-shadow:var(--sh2);overflow:hidden;margin-bottom:24px}
+.map-panel.show{display:block}
+.mp-header{padding:24px 26px 18px;border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,var(--bg2),#fff);position:relative;overflow:hidden}
+.mp-header::after{content:'';position:absolute;top:-40%;right:-10%;width:280px;height:280px;border-radius:50%;
+  background:var(--mc, var(--teal));opacity:.07;filter:blur(40px)}
+.mp-title-row{display:flex;align-items:center;gap:14px;margin-bottom:10px;position:relative;z-index:1}
+.mp-icon{font-size:36px}
+.mp-title{font-size:26px;font-weight:900;color:var(--navy)}
+.mp-essence{font-size:16px;color:var(--ink2);line-height:1.9;position:relative;z-index:1}
+.mp-body{padding:22px 26px}
+
+.mp-tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.mp-tab{padding:9px 18px;border-radius:9px;font-size:15px;font-weight:700;border:1.5px solid var(--border);background:var(--bg2);color:var(--ink2)}
+.mp-tab.act{background:var(--mc, var(--teal));color:#fff;border-color:transparent}
+.mp-tabcontent{display:none}
+.mp-tabcontent.show{display:block;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)}}
+
+.node-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.node-pill{padding:14px 10px;border-radius:10px;background:var(--bg2);border:1.5px solid var(--border);
+  cursor:pointer;text-align:center;transition:.15s}
+.node-pill:hover,.node-pill.sel{border-color:var(--mc, var(--teal));background:#fff}
+.node-pill-zh{font-size:15px;font-weight:800;color:var(--ink)}
+
+.node-detail{display:none;padding:20px;border-radius:10px;background:var(--bg2);border:1.5px solid var(--border)}
+.node-detail.show{display:block}
+.nd-title{font-size:22px;font-weight:900;color:var(--navy);margin-bottom:14px}
+.nd-card{padding:14px 16px;border-radius:9px;margin-bottom:10px;border-left:4px solid var(--mc, var(--teal));background:#fff}
+.nd-label{font-size:13px;font-weight:900;color:var(--mc, var(--teal));text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.nd-text{font-size:16px;color:var(--ink);line-height:1.85}
+
+.nd-trick{padding:14px 16px;border-radius:9px;background:var(--gold-l);border-left:4px solid var(--gold);margin-bottom:10px}
+.nd-trick .nd-label{color:var(--gold)}
+
+.nd-mindmap-box{padding:16px;border-radius:9px;background:var(--violet-l);margin:12px 0}
+.nd-mindmap-title{font-size:14px;font-weight:900;color:var(--violet);margin-bottom:10px}
+.nd-mm-flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.nd-mm-chip{font-size:14.5px;padding:8px 15px;border-radius:999px;background:#fff;color:var(--violet);font-weight:700;border:1.5px solid var(--violet)}
+.nd-mm-arrow{color:var(--violet);font-weight:900;font-size:17px}
+
+.nd-disease{padding:14px 16px;border-radius:9px;background:var(--rose-l);border-left:4px solid var(--rose)}
+.nd-disease .nd-label{color:var(--rose)}
+
+/* Quiz styles */
+.quiz-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.quiz-progress{font-size:15px;color:var(--ink3);font-weight:700}
+.quiz-jump{display:flex;gap:4px;flex-wrap:wrap}
+.quiz-jump-btn{width:28px;height:28px;border-radius:6px;font-size:12.5px;font-weight:700;
+  background:var(--bg2);border:1px solid var(--border);color:var(--ink3)}
+.quiz-jump-btn.done{background:var(--green-l);color:var(--green);border-color:var(--green)}
+.quiz-jump-btn.current{background:var(--mc, var(--teal));color:#fff;border-color:transparent}
+.quiz-card{padding:24px;border-radius:12px;background:var(--bg2);border:2px solid var(--border)}
+.quiz-num{font-size:13.5px;font-weight:900;color:var(--mc, var(--teal));margin-bottom:8px;text-transform:uppercase}
+.quiz-q{font-size:18px;font-weight:700;color:var(--ink);line-height:1.75;margin-bottom:18px}
+.quiz-options{display:grid;gap:10px;margin-bottom:18px}
+.quiz-opt{padding:13px 16px;border-radius:9px;background:#fff;border:1.5px solid var(--border);
+  text-align:left;font-size:16px;color:var(--ink2);cursor:pointer;transition:.15s}
+.quiz-opt:hover{border-color:var(--mc, var(--teal))}
+.quiz-opt.correct{background:var(--green-l);border-color:var(--green);color:var(--green);font-weight:700}
+.quiz-opt.wrong{background:var(--rose-l);border-color:var(--rose);color:var(--rose);font-weight:700}
+.quiz-opt.disabled{cursor:default}
+.quiz-explain{display:none;padding:16px 18px;border-radius:9px;background:#fff;border-left:4px solid var(--mc, var(--teal));margin-bottom:16px}
+.quiz-explain.show{display:block;animation:fadein .25s ease}
+.quiz-explain-label{font-size:13.5px;font-weight:900;color:var(--mc, var(--teal));margin-bottom:8px}
+.quiz-explain-text{font-size:16px;color:var(--ink2);line-height:1.85}
+.quiz-nav{display:flex;justify-content:space-between;gap:10px}
+.quiz-nav-btn{padding:12px 26px;border-radius:9px;font-size:16px;font-weight:700;background:var(--navy);color:#fff}
+.quiz-nav-btn:disabled{opacity:.3;cursor:default}
+.quiz-nav-btn.secondary{background:var(--bg3);color:var(--ink2)}
+
+.cta-sec{padding:48px 24px;background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;text-align:center}
+.cta-sec h2{font-size:clamp(22px,3.4vw,32px);font-weight:900;margin-bottom:12px}
+.cta-body{max-width:620px;margin:0 auto;font-size:16px;color:#cdf0f3;line-height:1.95}
+
+@media(max-width:980px){
+  .map-selector{grid-template-columns:repeat(3,1fr)}
+  .node-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .map-selector{grid-template-columns:repeat(2,1fr)}
+  .node-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-i">
+    <div class="logo">
+      <div class="logo-mark">🧪</div>
+      <div class="logo-txt">OrgChemMap｜有機化學地圖</div>
+    </div>
+    <div class="nav-tabs">
+      <button class="ntab" onclick="go('#philosophy')">核心理念</button>
+      <button class="ntab" onclick="go('#maps')">五大地圖</button>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="h-badge">ORGCHEMMAP · 不要背反應，要理解電子流</div>
+  <h1>把反應式變成<span class="gold">電子流地圖</span><br>看懂電子怎麼流動，不是背產物</h1>
+  <p class="hero-sub">
+    官能基、命名、電子流、反應四大規律地圖，全部匯流到醫學連結地圖裡的真實臨床案例：胺基酸、葡萄糖、脂肪酸、藥物結構。每個節點都有白話比喻、背誦秘訣、理解心智圖，每張地圖再搭配36題考古題練習。
+  </p>
+  <div class="hero-stats">
+    <div class="hstat"><div class="hstat-n">5</div><div class="hstat-l">大地圖</div></div>
+    <div class="hstat"><div class="hstat-n">19</div><div class="hstat-l">核心節點</div></div>
+    <div class="hstat"><div class="hstat-n">180</div><div class="hstat-l">考古題</div></div>
+    <div class="hstat"><div class="hstat-n">5</div><div class="hstat-l">套練習題庫</div></div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <section class="sec" id="philosophy">
+    <div class="sh">
+      <div class="etag">核心理念</div>
+      <h2>不要背反應，要理解電子流</h2>
+    </div>
+    <div class="philosophy-box" id="philosophy-box"></div>
+  </section>
+  <div class="divider"></div>
+
+  <section class="sec" id="maps">
+    <div class="sh">
+      <div class="etag">五大地圖</div>
+      <h2>點選任一地圖，深入每個節點並練習考古題</h2>
+      <p>官能基、命名、電子流、反應是四大規律地圖，醫學連結地圖把這些規律對應到胺基酸、葡萄糖、脂肪酸、藥物結構的真實臨床應用。每張地圖都有節點詳解跟36題考古題。</p>
+    </div>
+    <div class="map-selector" id="map-selector"></div>
+    <div class="map-panel" id="map-panel"></div>
+  </section>
+
+</div>
+
+<section class="cta-sec">
+  <div class="wrap">
+    <h2>🧪 從一個電子流動到一個臨床檢驗</h2>
+    <p class="cta-body">
+      有機化學最容易讓人放棄的地方，是把它當成一堂「反應式背誦課」。但它其實是一張地圖——看懂電子怎麼從多的地方流向少的地方，所有的反應式、所有的臨床應用，都會變成這張地圖上合理的風景。
+    </p>
+  </div>
+</section>
+
+<script>
+const D = {"philosophy": {"name_zh": "OrgChemMap 有機化學地圖", "tagline_zh": "不要背反應，要理解電子流", "essence_zh": "有機化學最痛苦的地方就是大家把它當成「反應式背誦課」——看到反應物硬記產物，考完試三天就忘光。OrgChemMap反過來做：每個反應都是電子從「電子多的地方」跑到「電子少的地方」的故事，先看懂電子怎麼流動，反應式只是順手寫下來的紀錄而已。", "core_principle_zh": "幾乎所有有機反應都在回答同一個問題：「電子密度高的地方(親核者)在哪裡？電子密度低的地方(親電者)在哪裡？」官能基決定了一個分子哪裡電子多、哪裡電子少，電子流導航描述電子怎麼從多的地方跑向少的地方，反應地圖則是這個電子流動完成後留下的具體足跡。看懂這個「電子流的故事」，反應式自然就有意義了。"}, "maps": [{"id": "functional_group", "zh": "官能基地圖", "icon": "🧪", "color": "#1e40af", "essence_zh": "官能基地圖的核心劇情：每個官能基都是分子上一個「電子密度特別不均勻」的小區域，這個不均勻的地方就是化學反應會發生的地方，碳鏈骨架本身大部分時候只是「不太反應的背景」。", "nodes": [{"id": "alkane_alkene_alkyne", "zh": "烷烯炔(碳鏈骨架家族)", "essence_zh": "烷類是碳跟碳之間只用單鍵連接的「飽和」骨架，電子分布均勻幾乎不反應；烯類、炔類因為有雙鍵或三鍵，多出來的π電子變成裸露在外、容易被搶走的「電子雲」，是這個家族裡少數會反應的位置", "physical_picture_zh": "把單鍵想成兩根牢牢拴住的繩子(σ鍵)，雙鍵跟三鍵則是繩子外面還繞了一圈鬆散的橡皮筋(π鍵)，這圈橡皮筋的電子離原子核比較遠、被抓得比較鬆，所以容易被別的分子「搶走」去進行反應", "trick_zh": "記「σ鍵牢、π鍵鬆，鬆的才會反應」，飽和的烷類因為全部都是σ鍵所以特別不愛反應", "mindmap_zh": ["烷類全部單鍵σ鍵", "電子分布均勻不易反應", "烯類多一條鬆散π鍵", "炔類多兩條鬆散π鍵", "π電子雲是反應發生的位置"], "exam_point_zh": "國考常考「為什麼雙鍵碳容易被親電基攻擊」，答案就是π電子雲裸露在外，正電性的親電基會優先攻擊這片容易得手的電子雲", "medical_link_zh": "細胞膜上的不飽和脂肪酸帶有雙鍵，這些雙鍵讓脂肪酸鏈彎曲不能緊密排列，是細胞膜維持流動性、不會在體溫下凍結變硬的關鍵結構基礎"}, {"id": "alcohol_ether", "zh": "醇醚(含氧單鍵家族)", "essence_zh": "醇類是碳上接了一個OH基(羥基)，醚類是兩個碳中間夾了一個氧，兩者共同特徵是氧原子的電子密度比碳高很多，氧像個「電子小氣鬼」把電子拉向自己，讓鄰近的氫或碳變得相對缺電子", "physical_picture_zh": "想像氧原子是一個很愛搶東西的人，跟碳氫共用電子的時候總是把電子往自己這邊多拉一點，這讓氧自己變得「電子過剩」(帶部分負電)，被氧搶走電子的氫則變得「電子不足」(帶部分正電)，醇的OH氫因此特別容易被當成酸放出去", "trick_zh": "記「醇的OH氫因為被氧搶了電子，比一般CH氫更容易被拉走(酸性)」，醚因為沒有OH氫所以沒有這個酸性", "mindmap_zh": ["氧電子密度比碳高", "醇有OH基(羥基)", "醚是碳氧碳的橋接結構", "OH氫因氧搶電子而帶酸性", "醚缺少酸性OH但仍能形成氫鍵的接受端"], "exam_point_zh": "國考常考醇跟醚的沸點比較：醇能形成分子間氫鍵(因為有OH)，醚不能(沒有OH氫)，這讓同碳數的醇沸點明顯高於醚", "medical_link_zh": "甘油(三個OH基的醇類)是細胞膜磷脂質的骨架核心，葡萄糖分子上掛著多個OH基，這些OH基讓葡萄糖能跟水形成大量氫鍵，這是葡萄糖能高度溶於血液中運輸的關鍵原因"}, {"id": "aldehyde_ketone", "zh": "醛酮(含氧雙鍵家族)", "essence_zh": "醛跟酮都帶有羰基(C=O雙鍵)，差別在醛的羰基碳至少接一個氫，酮的羰基碳兩邊都接碳，這個C=O雙鍵讓碳原子變得「電子不足」(因為氧把雙鍵電子都拉向自己)，是親核者最愛攻擊的目標", "physical_picture_zh": "羰基的碳因為被旁邊電子小氣鬼的氧搶走電子，變成一個「電子很餓」的位置，任何帶有多餘電子、想找地方安頓的親核者(像水、醇、胺)都會被這個電子很餓的碳吸引過去進行攻擊", "trick_zh": "記「醛的羰基碳比較好攻擊(旁邊只有一個碳或氫擋著)，酮的羰基碳比較難攻擊(兩邊都有碳擋著)」，這是醛比酮反應性更強的關鍵原因", "mindmap_zh": ["羰基C=O是反應核心", "氧搶走雙鍵電子讓碳缺電子", "醛碳至少接一個氫", "酮碳兩邊都接碳", "親核者攻擊缺電子的羰基碳"], "exam_point_zh": "國考常考醛跟酮反應性的比較，醛因為周圍立體障礙較小、電子缺乏程度也較明顯，普遍比酮更容易被親核者攻擊", "medical_link_zh": "葡萄糖開鏈狀態時帶有一個醛基(醛糖)，這個醛基的還原性是臨床上驗尿糖、驗血糖試紙能呈色反應的化學基礎"}, {"id": "acid_ester_amine", "zh": "羧酸酯胺(含氮氧官能基家族)", "essence_zh": "羧酸是羰基旁邊多接了一個OH(同時具備醛酮的缺電子羰基跟醇的酸性OH特性，酸性比醇更強)，酯是羧酸的OH被換成另一個碳氧結構(失去酸性但保留羰基反應性)，胺則是氮原子帶有一對沒有跟任何東西共用的「孤對電子」，讓胺變成天然的親核者跟鹼", "physical_picture_zh": "羧酸像是醇(有酸性OH)跟酮(有缺電子羰基)的綜合體，這個組合讓羧酸的OH氫比單純醇的OH氫更容易被搶走(酸性更強)；胺則完全相反，氮原子上那對孤對電子像隨身帶著一把「可以隨時送出去」的電子，讓胺很樂意主動去攻擊別的缺電子位置", "trick_zh": "記「羧酸OH比醇OH更酸，因為旁邊的羰基幫忙把負電荷分散掉讓酸根更穩定」，胺則記「孤對電子在身上就是天生的親核者」", "mindmap_zh": ["羧酸結合羰基跟酸性OH", "酯是羧酸OH換成碳氧結構", "酯失去酸性但保留羰基反應性", "胺氮原子帶孤對電子", "胺是天然的親核者跟鹼"], "exam_point_zh": "國考常考羧酸酸性為什麼比醇強很多，答案是羧酸根(去掉氫後)的負電荷能同時分散在兩個氧原子上(共振穩定)，這個穩定性讓羧酸更容易把氫放出去", "medical_link_zh": "胺基酸同時帶有羧酸基跟胺基，這個雙重身份讓胺基酸在不同酸鹼環境下能呈現不同的電荷狀態(兩性電解質)，是蛋白質摺疊跟酵素活性調控的重要化學基礎"}], "quiz": [{"num": 1, "q": "烷類碳跟碳之間用什麼鍵連接？", "options": ["雙鍵", "三鍵", "單鍵(σ鍵)", "沒有任何鍵"], "answer": 2, "explain": "烷類是「飽和」碳氫化合物，碳跟碳之間全部都是單鍵(σ鍵)，這種鍵牢固且電子分布均勻，所以烷類整體很不容易發生化學反應。"}, {"num": 2, "q": "為什麼烯類跟炔類比烷類更容易發生反應？", "options": ["因為碳數比較少", "因為多出來的π電子雲鬆散裸露在外容易被搶走", "因為分子比較輕", "跟電子分布完全無關"], "answer": 1, "explain": "烯類跟炔類除了σ鍵之外，還多了一條或兩條鬆散的π鍵，這個π電子雲離原子核比較遠，被抓得比較鬆，容易被別的分子(親電者)搶走電子進行反應，這是它們比烷類活潑的關鍵原因。"}, {"num": 3, "q": "醇類的官能基是什麼？", "options": ["羰基", "羥基(OH)", "羧基", "胺基"], "answer": 1, "explain": "醇類的官能基是羥基(OH)，碳上接著一個氧氫基團，這個OH基是醇類所有化學性質(像酸性、氧化反應)的根本來源。"}, {"num": 4, "q": "為什麼醇的OH氫比一般CH氫更容易展現酸性？", "options": ["因為氧電子密度比碳高，把電子往自己拉讓氫變得相對缺電子", "因為碳比氧重", "跟電子密度完全無關", "因為OH本身帶負電"], "answer": 0, "explain": "氧原子的電子密度比碳高很多，可以想成氧是個『電子小氣鬼』，跟氫共用電子時總是把電子往自己這邊多拉一點，這讓氫變得相對缺電子，更容易被當成酸放出去(以H+的形式)。"}, {"num": 5, "q": "醚類的結構特徵是什麼？", "options": ["兩個碳中間夾一個氧", "碳上接一個OH", "碳上有雙鍵氧", "碳上接一個氮"], "answer": 0, "explain": "醚類的結構是兩個碳原子中間夾著一個氧原子(碳-氧-碳)，跟醇類「碳上接OH」的結構不同，醚沒有OH氫所以沒有醇類那種明顯的酸性。"}, {"num": 6, "q": "醇跟醚的沸點比較，哪一個通常比較高？為什麼？", "options": ["醚比較高，因為氧比較多", "醇比較高，因為醇有OH能形成分子間氫鍵", "兩者完全相同", "跟氫鍵完全無關"], "answer": 1, "explain": "醇分子上的OH基能形成分子間氫鍵(一個分子的OH氫被另一個分子的氧吸引)，這個額外的吸引力讓分子要分開(蒸發)需要更多能量，沸點因此較高；醚沒有OH氫，沒辦法形成這種氫鍵，沸點通常比同碳數的醇低很多。"}, {"num": 7, "q": "醛類的羰基碳上至少接著什麼？", "options": ["一個氮原子", "一個氫原子", "兩個碳原子", "一個OH基"], "answer": 1, "explain": "醛類的定義是羰基碳上至少接一個氫原子(另一端接碳鏈或氫)，這跟酮類羰基碳兩邊都接碳不同，這個結構差異直接影響醛跟酮的反應性差異。"}, {"num": 8, "q": "酮類的羰基碳兩邊分別接著什麼？", "options": ["兩個氫原子", "一個氫一個氧", "兩個碳原子", "一個碳一個氮"], "answer": 2, "explain": "酮類的羰基碳兩邊都接著碳原子(碳鏈)，沒有氫直接接在羰基碳上，這跟醛類至少有一個氫的結構不同。"}, {"num": 9, "q": "為什麼醛通常比酮更容易被親核者攻擊？", "options": ["因為醛比較重", "醛羰基碳周圍立體障礙較小、電子缺乏程度更明顯", "因為醛比較少見", "跟立體障礙完全無關"], "answer": 1, "explain": "醛的羰基碳一邊接的是體積較小的氫(或乾脆是末端)，立體障礙比兩邊都接碳的酮小很多，加上醛的電子缺乏程度通常也比酮明顯，這兩個因素加起來讓醛普遍比酮更容易被親核者攻擊。"}, {"num": 10, "q": "羰基(C=O)為什麼讓碳原子變得電子不足？", "options": ["跟氧無關", "因為氧把雙鍵的電子都拉向自己，讓碳相對缺電子", "因為碳本身就缺電子", "因為碳跟氧之間沒有共用電子"], "answer": 1, "explain": "羰基是碳跟氧之間的雙鍵，氧的電子密度比碳高，會把這個雙鍵共用的電子更多地拉向自己，這讓碳端因此變得相對電子不足，成為親核者最容易進攻的目標。"}, {"num": 11, "q": "羧酸的結構是哪兩個官能基特徵的結合？", "options": ["醇基跟胺基", "羰基(缺電子碳)跟酸性OH", "醚基跟酮基", "跟其他官能基完全無關獨立存在"], "answer": 1, "explain": "羧酸可以理解成醛酮的缺電子羰基跟醇的酸性OH結合在同一個碳上，這個獨特的組合讓羧酸同時具有羰基的反應性跟比一般醇更強的酸性。"}, {"num": 12, "q": "為什麼羧酸的酸性比醇強很多？", "options": ["跟氫鍵有關但跟共振無關", "羧酸根的負電荷能分散在兩個氧原子上(共振穩定)讓酸更容易放出氫", "因為羧酸比較重", "跟酸性強弱完全無關的兩種物質"], "answer": 1, "explain": "羧酸放出氫後形成的羧酸根，負電荷能同時分散在兩個氧原子上(這叫共振穩定)，這個額外的穩定性讓羧酸更容易把氫放出去，所以羧酸的酸性遠強於只有一個氧承擔負電荷的醇類。"}, {"num": 13, "q": "酯類是羧酸的OH被什麼結構取代後形成的？", "options": ["被氫取代", "被另一個碳氧結構(來自醇)取代", "被氮取代", "被另一個氫氧根取代"], "answer": 1, "explain": "酯是羧酸的OH基被另一個碳氧結構(本質上來自醇分子提供的部分)取代後形成的產物，這個取代讓酯失去了羧酸原本的酸性OH，但保留了羰基的反應性。"}, {"num": 14, "q": "胺類最重要的結構特徵是什麼？", "options": ["氮原子帶有孤對電子", "氮原子完全沒有電子", "氮原子帶正電", "跟電子分布完全無關"], "answer": 0, "explain": "胺類的氮原子帶有一對沒有跟任何東西共用的「孤對電子」，這對孤對電子讓胺很樂意主動送出去攻擊別的缺電子位置，是胺類具有親核性跟鹼性的根本原因。"}, {"num": 15, "q": "為什麼胺類天然就是親核者跟鹼？", "options": ["因為氮原子很重", "因為氮的孤對電子隨時可以送出去形成新鍵或接受氫", "因為胺本身帶負電", "跟孤對電子完全無關"], "answer": 1, "explain": "胺類氮原子上的孤對電子，可以隨時送出去攻擊缺電子的碳(展現親核性)，也可以接受一個氫離子(展現鹼性，吸收酸根的氫變成帶正電的銨離子)，這兩個性質都來自同一對孤對電子。"}, {"num": 16, "q": "細胞膜上的不飽和脂肪酸帶有什麼官能基結構？", "options": ["胺基", "雙鍵(烯類官能基)", "羧酸根", "醛基"], "answer": 1, "explain": "細胞膜磷脂質上的不飽和脂肪酸鏈帶有雙鍵(烯類官能基結構)，這個雙鍵讓脂肪酸鏈彎曲，無法緊密排列，是細胞膜在體溫下維持流動性的關鍵結構基礎。"}, {"num": 17, "q": "甘油是哪一種官能基構成的分子？", "options": ["三個胺基的胺類", "三個OH基的醇類", "三個羧酸基的酸類", "三個醚橋的醚類"], "answer": 1, "explain": "甘油是帶有三個OH基的醇類分子(三元醇)，是細胞膜磷脂質骨架的核心結構，三個OH基能分別跟脂肪酸形成酯鍵連接成完整的脂質分子。"}, {"num": 18, "q": "葡萄糖開鏈狀態時帶有哪個官能基？", "options": ["羧酸基", "醛基(因此叫醛糖)", "酯基", "胺基"], "answer": 1, "explain": "葡萄糖開鏈狀態時帶有一個醛基，因此被歸類為醛糖，這個醛基的還原性是驗尿糖、驗血糖試紙能呈色反應的化學基礎。"}, {"num": 19, "q": "驗尿糖試紙的化學原理跟葡萄糖的哪個官能基特性最相關？", "options": ["跟官能基完全無關", "醛基的還原性", "胺基的鹼性", "醚基的穩定性"], "answer": 1, "explain": "葡萄糖的醛基具有還原性(能把別的物質還原，自己被氧化)，驗尿糖試紙利用這個還原性設計呈色反應，葡萄糖濃度越高，反應越明顯，呈色也越深。"}, {"num": 20, "q": "胺基酸同時帶有哪兩種官能基？", "options": ["醇基跟醚基", "羧酸基跟胺基", "醛基跟酮基", "酯基跟胺基"], "answer": 1, "explain": "胺基酸同時帶有羧酸基(酸性)跟胺基(鹼性)，這個雙重身份讓胺基酸在不同酸鹼環境下能呈現不同的電荷狀態，這個特性叫兩性電解質。"}, {"num": 21, "q": "σ鍵跟π鍵相比，哪一個的電子被抓得比較緊？", "options": ["π鍵比較緊", "σ鍵比較緊", "兩者完全相同", "跟緊鬆完全無關"], "answer": 1, "explain": "σ鍵的電子雲集中在兩個原子核連線的正中間，被抓得比較緊牢固；π鍵的電子雲分布在連線上下兩側，離原子核比較遠，相對鬆散，這個差異是雙鍵三鍵比單鍵更容易反應的根本原因。"}, {"num": 22, "q": "乙醇(常見的酒精)屬於哪一種官能基類別？", "options": ["醚類", "醇類", "酮類", "羧酸類"], "answer": 1, "explain": "乙醇是最簡單常見的醇類分子，帶有一個OH基，這個OH基讓乙醇能跟水形成氫鍵互溶，也是它在肝臟代謝(氧化成乙醛再到乙酸)的反應位置。"}, {"num": 23, "q": "丙酮屬於哪一種官能基類別？", "options": ["醛類", "酮類", "醚類", "胺類"], "answer": 1, "explain": "丙酮的羰基碳兩邊都接著碳(甲基)，屬於典型的酮類分子，是工業上常見的有機溶劑，也是人體在饥餓或糖尿病酮酸血症時會產生的一種酮體。"}, {"num": 24, "q": "乙酸(醋的主要成分)屬於哪一種官能基類別？", "options": ["醇類", "羧酸類", "酯類", "胺類"], "answer": 1, "explain": "乙酸帶有羧酸基(羰基加酸性OH)，是典型的羧酸類分子，醋裡面酸味的主要來源，乙醇在體內氧化的最終產物之一就是乙酸。"}, {"num": 25, "q": "為什麼三級醇完全不能被氧化？", "options": ["因為三級醇太穩定不參與反應", "因為氧化需要拔掉碳上的氫，但三級醇碳已被三個碳佔滿沒有氫", "因為三級醇帶負電", "跟碳上氫的數量完全無關"], "answer": 1, "explain": "醇類的氧化反應本質是把碳上的氫拔掉、讓碳氧之間多形成一個鍵，三級醇的碳已經被三個其他的碳原子佔滿位置，沒有氫可以被拔走，所以完全沒辦法進行這種氧化反應。"}, {"num": 26, "q": "哪一種脂肪酸(飽和或不飽和)在室溫下通常呈固態？", "options": ["不飽和脂肪酸", "飽和脂肪酸", "兩者都是固態", "兩者都是液態"], "answer": 1, "explain": "飽和脂肪酸的碳鏈是筆直的(全部單鍵)，能緊密堆疊排列形成較強的分子間作用力，在室溫下通常呈固態(像動物脂肪)；不飽和脂肪酸因為雙鍵造成碳鏈彎曲，無法緊密堆疊，室溫下通常呈液態(像植物油)。"}, {"num": 27, "q": "人造氫化油的製程涉及什麼化學反應？", "options": ["把雙鍵氧化掉", "把不飽和脂肪酸的雙鍵進行氫加成反應變成單鍵", "把飽和脂肪酸去氫變成雙鍵", "跟雙鍵完全無關"], "answer": 1, "explain": "人造氫化油是把原本液態的不飽和油脂，透過氫加成反應把雙鍵打開變成單鍵(飽和化)，讓原本液態的油變成固態的人造奶油，但這個過程可能產生對心血管有害的反式脂肪結構。"}, {"num": 28, "q": "醚類因為缺少OH基，在哪個物理性質上通常表現得跟醇類不同？", "options": ["分子量", "顏色", "沸點(通常較低，因為沒有氫鍵)", "化學式裡碳的數量"], "answer": 2, "explain": "醚缺少OH氫，沒辦法形成分子間氫鍵，相比同碳數的醇類，醚的沸點通常明顯較低，因為分子之間缺少氫鍵這種額外的吸引力，比較容易分開(蒸發)。"}, {"num": 29, "q": "NSAIDs類消炎止痛藥常帶有什麼官能基，幫助跟酵素活性位置產生氫鍵交互作用？", "options": ["胺基", "羧酸基", "醚基", "炔基"], "answer": 1, "explain": "許多NSAIDs類消炎止痛藥的結構帶有羧酸基，這個羧酸基的酸性OH能跟酵素活性位置上的特定胺基酸殘基形成氫鍵交互作用，幫助藥物穩定結合在標靶酵素上發揮抑制作用。"}, {"num": 30, "q": "為什麼酮類不能像醛類一樣被進一步氧化成羧酸？", "options": ["酮類太穩定不參與任何反應", "酮的羰基碳兩邊都接碳，沒有氫可以被拔走形成新的碳氧鍵", "酮類本身已經是羧酸", "跟碳上是否有氫完全無關"], "answer": 1, "explain": "氧化反應要在羰基碳上拔掉一個氫形成新的鍵，但酮的羰基碳兩邊都已經接著碳原子(沒有氫直接接在羰基碳上)，沒有氫可以被拔走，所以酮無法像醛那樣進一步氧化成羧酸。"}, {"num": 31, "q": "胺基酸在生理pH環境下會形成什麼樣的電荷狀態？", "options": ["完全不帶電", "只帶正電", "雙性離子(同時帶正負電，淨電荷為零)", "只帶負電"], "answer": 2, "explain": "胺基酸的羧酸基在生理pH下容易放出氫變成帶負電的羧酸根，胺基則容易接受氫變成帶正電的銨根，整個分子同時帶正負電，淨電荷剛好抵消為零，這個狀態叫雙性離子。"}, {"num": 32, "q": "哪一個官能基家族裡的分子，氧原子直接連接兩個碳原子(沒有額外的氫直接接在氧上)？", "options": ["醇類", "醚類", "羧酸類", "胺類"], "answer": 1, "explain": "醚類的結構是「碳-氧-碳」，氧原子直接連接兩個碳原子，氧上沒有額外的氫，這跟醇類「碳-氧-氫」(氧上接一個氫)的結構不同。"}, {"num": 33, "q": "為什麼說羧酸的酸性OH比醛酮的羰基更『多功能』？", "options": ["因為羧酸OH既有醇的氫鍵能力又比一般醇更酸", "因為羧酸完全沒有反應性", "跟多功能性完全無關的概念", "因為羧酸不含氧"], "answer": 0, "explain": "羧酸的OH基既保留了醇類那種能形成氫鍵的特性，又因為旁邊羰基的存在讓酸性比一般醇強很多，這個組合讓羧酸同時具備多種反應跟物理特性，比單純的醇或單純的羰基化合物更『全能』。"}, {"num": 34, "q": "細胞膜為什麼需要不飽和脂肪酸(帶雙鍵)而不是只用飽和脂肪酸？", "options": ["不飽和脂肪酸比較便宜", "雙鍵造成的彎曲結構讓膜保持適當流動性，不會在體溫下凍結變硬", "跟流動性完全無關", "飽和脂肪酸無法形成細胞膜"], "answer": 1, "explain": "如果細胞膜全部使用容易緊密堆疊的飽和脂肪酸，膜可能在體溫下變得太硬太死板；摻入帶雙鍵的不飽和脂肪酸，雙鍵造成的彎曲結構讓脂肪酸鏈無法緊密排列，維持膜在體溫下適當的流動性，這對細胞的物質運輸跟功能運作非常重要。"}, {"num": 35, "q": "如果一個分子同時帶有醇基(OH)跟羧酸基(COOH)，哪一個官能基的酸性表現會比較明顯？", "options": ["醇基比較酸", "羧酸基比較酸，因為共振穩定效果更強", "兩者完全一樣酸", "跟酸性表現完全無關"], "answer": 1, "explain": "羧酸基因為去掉氫後形成的羧酸根能透過共振把負電荷分散在兩個氧原子上，這個額外穩定性讓羧酸的酸性遠強於醇的OH基，所以同一個分子上如果兩種官能基都存在，羧酸基的酸性表現會明顯得多。"}, {"num": 36, "q": "總結來說，官能基地圖想傳達的核心概念是什麼？", "options": ["每個官能基都要單獨背誦反應式", "每個官能基都是分子上電子密度特別不均勻的小區域，這個不均勻就是反應發生的位置", "官能基跟化學反應完全沒有關係", "碳鏈骨架才是決定反應性的關鍵"], "answer": 1, "explain": "官能基地圖的核心概念是：每個官能基(無論是雙鍵、OH、羰基、酸性基、胺基)都代表分子上一個電子密度特別不均勻的區域，這個不均勻正是化學反應會發生的位置，理解這個電子密度分布的邏輯，比死記每個官能基對應的反應式更能幫助長期記憶跟靈活應用。"}]}, {"id": "naming", "zh": "命名導航", "icon": "🏷️", "color": "#0d7d8c", "essence_zh": "命名導航的核心劇情：IUPAC命名法本質上是一套「幫分子寫地址」的系統，先找出最長的主要道路(主鏈)，再標記巷弄分支(支鏈)的位置，最後標出最重要的地標(官能基)，照著這個順序念出來就是化合物的名字。", "nodes": [{"id": "iupac_core", "zh": "IUPAC核心規則", "essence_zh": "IUPAC命名遵循固定的順序：先找最長碳鏈決定母體名稱、再從讓官能基編號最小的那一端開始數、最後把所有支鏈跟官能基的位置跟名稱按字母順序排好寫出來", "physical_picture_zh": "想像在幫一條新開的路命名跟編號門牌：先決定這條路叫什麼名字(母體碳鏈)，再決定從哪一端開始編號(讓重要地標的門牌號碼最小)，最後把路上所有的店家跟地標(支鏈、官能基)按照門牌號碼跟字母順序列出來", "trick_zh": "記口訣「先找路、再編號、後列支」三步驟，依照這個固定順序念，不要被複雜結構一次塞太多資訊嚇到", "mindmap_zh": ["先找最長碳鏈當母體", "編號從官能基最小數開始", "支鏈位置跟名稱要列出", "字母順序排列支鏈", "最後加上官能基字尾"], "exam_point_zh": "國考最愛考「編號方向選擇錯誤」的陷阱題，記住一定是讓最重要的官能基拿到最小編號，不是讓支鏈拿到最小編號", "medical_link_zh": "藥物的化學名稱(像ibuprofen的IUPAC全名)雖然複雜，但拆解後一樣是依照碳鏈、支鏈、官能基的固定邏輯命名，看懂這個邏輯能幫助理解藥物結構跟作用機轉的關聯"}, {"id": "chain_branch", "zh": "碳鏈與支鏈", "essence_zh": "主鏈是分子裡最長的那一條連續碳鏈，任何從主鏈上分支出去的較短碳鏈都叫支鏈，支鏈的名字會在字尾加上「基」，並標明它接在主鏈第幾號碳上", "physical_picture_zh": "把分子想成一棵樹，主幹(主鏈)決定整棵樹的基本走向，從主幹長出來的較短分支(支鏈)則是額外的裝飾，命名時要先確定主幹是哪一條，再描述每根分支長在主幹的哪個位置", "trick_zh": "記「主鏈不一定是畫出來最直的那條，是真正碳數最多的那條」，這是初學最容易看錯的地方", "mindmap_zh": ["主鏈是碳數最多的連續鏈", "支鏈是從主鏈分出去的較短鏈", "支鏈字尾加『基』", "標明支鏈所在的碳編號", "多個相同支鏈用雙、參等字首"], "exam_point_zh": "國考常考「看似最長但其實不是主鏈」的結構陷阱，要訓練自己逐條數碳數而不是憑視覺直接判斷哪條線畫得最長", "medical_link_zh": "類固醇骨架(像膽固醇)的複雜環狀支鏈結構，正是命名複雜天然有機分子時碳鏈支鏈系統最具挑戰性的應用範例"}, {"id": "functional_priority", "zh": "官能基優先順序", "essence_zh": "當一個分子同時帶有多種官能基時，IUPAC規定了一套優先順序(羧酸>酯>醛>酮>醇>胺等)，優先順序最高的官能基會決定整個分子的字尾跟主鏈編號方向，其他官能基則退居成字首", "physical_picture_zh": "想像官能基們在排隊決定誰當「主角」(決定字尾)，誰只能當「配角」(降階變成字首修飾語)，這個排隊順序是固定的，氧化程度越高(像羧酸)排得越前面，當主角的機會也越大", "trick_zh": "記口訣「酸大於酯大於醛大於酮大於醇大於胺」，這個順序大致對應官能基被氧化的程度由高到低", "mindmap_zh": ["多官能基要排優先順序", "羧酸通常排最優先", "主角官能基決定字尾", "其他官能基降階變字首", "優先順序也決定編號方向"], "exam_point_zh": "國考常考同一個分子同時有OH跟COOH時該怎麼命名，答案永遠是羧酸優先當字尾(-oic acid)，OH退居變成字首(hydroxy-)", "medical_link_zh": "胺基酸同時帶有胺基跟羧酸基，依照官能基優先順序羧酸基當主角決定命名字尾，這也呼應了羧酸基在生理pH下更容易展現酸性電荷的化學行為"}], "quiz": [{"num": 1, "q": "IUPAC命名第一步要做什麼？", "options": ["先找支鏈", "先找出分子裡最長的連續碳鏈決定母體名稱", "先決定字尾", "先數氫原子數量"], "answer": 1, "explain": "IUPAC命名的第一步是找出分子裡最長的連續碳鏈，這條鏈決定了化合物的母體名稱(像甲烷、乙烷等基本骨架)，後面所有的支鏈跟官能基都是依附在這個母體上描述的。"}, {"num": 2, "q": "碳鏈編號方向選擇的原則是什麼？", "options": ["從讓支鏈編號最小的那一端開始", "從讓最重要的官能基編號最小的那一端開始", "永遠從左邊開始", "永遠從碳數最多的那一端開始"], "answer": 1, "explain": "編號方向的選擇原則是讓「最重要的官能基」拿到最小的編號數字，不是讓支鏈拿到最小編號，這是初學者最容易搞錯的地方，一定要先確認官能基的位置再決定編號方向。"}, {"num": 3, "q": "主鏈的定義是什麼？", "options": ["畫出來看起來最直的那條線", "分子裡真正碳數最多的連續鏈", "碳數最少的那條鏈", "跟碳數完全無關，只看官能基位置"], "answer": 1, "explain": "主鏈是分子裡真正碳數最多的那條連續鏈，不一定是結構圖上畫起來看起來最直、最容易一眼看出來的那條線，必須逐一數每條可能鏈的碳數來確認哪條才是真正的主鏈。"}, {"num": 4, "q": "支鏈的命名字尾通常加上什麼？", "options": ["『酸』", "『醇』", "『基』", "『酮』"], "answer": 2, "explain": "從主鏈分支出去的較短碳鏈(支鏈)在命名時字尾會加上「基」，比如甲基、乙基，表示這是一個接在主鏈上的取代基團，而不是獨立的化合物。"}, {"num": 5, "q": "如果一個分子上有兩個相同的甲基支鏈，命名時怎麼表示？", "options": ["重複寫兩次甲基甲基", "用『雙』這個字首搭配甲基", "完全忽略其中一個", "隨意命名沒有固定規則"], "answer": 1, "explain": "當同一種支鏈出現多次時，會用「雙」、「參」、「四」等字首搭配支鏈名稱來表示數量，比如兩個甲基支鏈會寫成「雙甲基」，這樣可以簡潔地表達多個相同支鏈的存在。"}, {"num": 6, "q": "當一個分子同時帶有羧酸基跟OH基時，IUPAC命名時哪一個官能基當主角(決定字尾)？", "options": ["OH基優先", "羧酸基優先，因為它的優先順序比醇高", "兩個一樣重要無法決定", "看分子大小決定"], "answer": 1, "explain": "IUPAC規定了官能基的優先順序，羧酸的優先順序比醇高，所以當兩者同時存在時，羧酸基會當主角決定字尾(-oic acid)，OH基則退居變成字首(hydroxy-)。"}, {"num": 7, "q": "官能基優先順序口訣「酸大於酯大於醛大於酮大於醇大於胺」，這個順序大致對應什麼概念？", "options": ["分子量大小", "官能基被氧化的程度由高到低", "顏色深淺", "跟氧化程度完全無關"], "answer": 1, "explain": "這個優先順序大致對應官能基的氧化程度：羧酸(氧化程度最高)排最前面，胺類(沒有氧、氧化程度概念不適用但排序習慣放最後)排在後面，整體反映了含氧官能基被氧化程度越高，在命名時越容易拿到主角地位的規律。"}, {"num": 8, "q": "為什麼說IUPAC命名像是「幫分子寫地址」？", "options": ["跟地址完全沒有任何類比關係", "因為命名要先確定主鏈(路名)，再標出支鏈位置(門牌)，最後標示官能基(地標)", "因為化合物真的有實際地址", "純粹是隨意的比喻沒有邏輯基礎"], "answer": 1, "explain": "IUPAC命名的邏輯確實很像幫一條路命名跟編門牌：先決定這條路叫什麼名字(主鏈母體名稱)，再決定編號方向(讓重要地標門牌最小)，最後列出路上所有的店家地標(支鏈、官能基)的位置，這個類比能幫助記住命名的固定順序。"}, {"num": 9, "q": "類固醇分子(像膽固醇)的命名挑戰主要在於什麼？", "options": ["碳數太少", "複雜的環狀支鏈結構難以辨識主鏈", "完全沒有官能基", "跟命名規則完全無關"], "answer": 1, "explain": "類固醇骨架(像膽固醇)具有複雜的環狀支鏈結構，要在這種多環系統裡辨識出哪一條是真正的『主鏈』、哪些是支鏈，比簡單的直鏈分子困難很多，這是命名複雜天然有機分子時最具挑戰性的部分。"}, {"num": 10, "q": "如果一個分子主鏈是5個碳，編號從左邊數官能基在第2號碳，從右邊數官能基在第4號碳，應該選哪個編號方向？", "options": ["從左邊數，因為官能基編號較小(2號)", "從右邊數，因為比較習慣從右邊開始", "兩個方向都可以隨意選", "跟編號方向完全無關"], "answer": 0, "explain": "編號方向的選擇原則是讓官能基拿到最小編號，題目中從左邊數官能基是第2號(比從右邊數的第4號小)，所以應該選擇從左邊開始編號的方向。"}, {"num": 11, "q": "胺基酸命名時，羧酸基跟胺基哪一個官能基決定主要的命名字尾？", "options": ["胺基優先", "羧酸基優先，因為其優先順序比胺基高", "兩者完全相等", "跟優先順序完全無關"], "answer": 1, "explain": "依照官能基優先順序，羧酸的優先順序比胺類高，所以胺基酸命名時羧酸基當主角決定字尾，這也呼應了羧酸基在生理pH下更容易展現酸性電荷的化學行為，是優先順序規則的合理性所在。"}, {"num": 12, "q": "國考最愛考的「編號方向選擇」陷阱題，最常見的錯誤是什麼？", "options": ["忘記寫支鏈名稱", "誤以為要讓支鏈編號最小而選錯方向", "完全不需要編號", "把官能基跟支鏈搞混名稱"], "answer": 1, "explain": "最常見的陷阱是學生誤以為編號方向要讓「支鏈」拿到最小編號，但正確規則是要讓「官能基」拿到最小編號，支鏈的位置編號是次要考量，這個優先順序的混淆是國考最常設計的陷阱。"}, {"num": 13, "q": "支鏈名稱在命名中按照什麼順序排列？", "options": ["隨意排列沒有固定規則", "按字母順序排列", "按支鏈大小排列", "按支鏈出現的先後順序"], "answer": 1, "explain": "當分子上有多個不同的支鏈時，命名時要按照支鏈名稱的字母順序排列書寫，這是IUPAC命名規則裡確保命名一致性、避免混淆的重要規定。"}, {"num": 14, "q": "如果分子裡有兩條長度相同的最長碳鏈可以選擇當主鏈，應該怎麼決定？", "options": ["隨便選一條", "選擇支鏈數量較多(或官能基位置編號較合理)的那條", "選碳數比較少的", "完全沒有判斷標準"], "answer": 1, "explain": "當有兩條等長的鏈可以作為主鏈候選時，通常會選擇能讓支鏈數量更多被涵蓋進主鏈、或讓官能基編號更合理的那一條，這類情況需要綜合考量多項IUPAC規則來決定最終選擇。"}, {"num": 15, "q": "藥物的IUPAC化學全名通常很複雜，但拆解後遵循什麼邏輯？", "options": ["完全沒有規律純粹隨機命名", "一樣遵循碳鏈、支鏈、官能基的固定命名邏輯", "只看分子量決定名稱", "跟一般有機物命名規則完全不同"], "answer": 1, "explain": "即使是看起來非常複雜的藥物化學全名(像ibuprofen的IUPAC全名)，拆解開來分析，依然遵循一般有機化合物命名的固定邏輯：先確定碳鏈骨架、標出支鏈位置、再標示官能基，只是因為藥物分子通常結構複雜，所以全名顯得又長又難念。"}, {"num": 16, "q": "主鏈確定後，下一步通常是做什麼？", "options": ["直接寫出最終名稱不需要其他步驟", "確定編號方向(讓官能基拿到最小編號)", "先寫支鏈名稱再決定主鏈", "跳過官能基不需要考慮"], "answer": 1, "explain": "確定主鏈之後，下一步是決定編號方向，原則是讓最重要的官能基拿到最小的編號數字，這個步驟確定後才能進一步標示支鏈的具體位置編號。"}, {"num": 17, "q": "為什麼說「畫出來最長的線不一定是主鏈」？", "options": ["因為視覺上的長短跟真正的碳數可能不一致", "因為主鏈跟長度完全無關", "因為這句話完全錯誤", "因為分子結構圖永遠準確反映碳數"], "answer": 0, "explain": "在複雜的分子結構圖中，視覺上看起來「最長最直」的那條線段，有時候因為繪圖角度或轉折的關係，實際碳數反而不是最多的，真正的主鏈必須透過仔細數每一條可能路徑的碳原子數量來確認，不能只靠目視判斷。"}, {"num": 18, "q": "當分子上同時有酯基跟胺基時，依照優先順序，哪個官能基當主角？", "options": ["胺基優先", "酯基優先，因為其優先順序比胺基高", "兩者相等", "看分子哪邊先寫決定"], "answer": 1, "explain": "依照優先順序口訣「酸大於酯大於醛大於酮大於醇大於胺」，酯的優先順序比胺類高，所以當兩者同時存在於同一分子時，酯基會當主角決定命名字尾。"}, {"num": 19, "q": "取代基(支鏈)在命名時，除了字母順序外，還需要標示什麼資訊？", "options": ["完全不需要額外資訊", "標示這個支鏈接在主鏈的第幾號碳上", "標示分子的顏色", "標示分子的氣味"], "answer": 1, "explain": "除了按字母順序排列支鏈名稱外，命名時還必須清楚標示每個支鏈具體接在主鏈的第幾號碳上(用數字標示)，這樣才能讓讀者準確還原出分子的完整結構，不會產生混淆。"}, {"num": 20, "q": "為什麼IUPAC命名系統需要有「固定且全球統一」的規則？", "options": ["純粹是傳統習慣沒有實際用途", "讓不同國家的化學家能透過名稱準確溝通同一個分子結構，避免混淆", "因為這樣比較好聽", "跟溝通完全無關"], "answer": 1, "explain": "IUPAC(國際純粹與應用化學聯合會)制定統一命名規則的目的，是讓全世界不同國家、不同語言背景的化學家，都能透過同一套命名邏輯準確理解並溝通同一個分子的具體結構，避免因為地區性俗名造成的混淆跟誤解。"}, {"num": 21, "q": "如果一個分子上同時有兩個OH基(雙醇)，命名時字首會怎麼表示？", "options": ["寫成『單醇』", "用『二』搭配醇的字尾表示有兩個OH", "完全省略不寫", "隨意命名"], "answer": 1, "explain": "當分子上有多個相同的官能基(像兩個OH基)時，會用「二」、「三」等數量字首搭配對應的字尾(像『二醇』)來表示，清楚標示出官能基出現的數量。"}, {"num": 22, "q": "命名時，支鏈的位置編號數字要寫在哪裡？", "options": ["完全不需要寫出數字", "寫在支鏈名稱前面，用連字號跟名稱分開", "寫在最後面", "隨意放在任何位置"], "answer": 1, "explain": "支鏈的位置編號數字按照慣例會寫在該支鏈名稱的前面，並用連字號跟名稱本身分隔開來(例如2-甲基)，這樣的格式能清楚表達『這個甲基支鏈接在第2號碳上』的資訊。"}, {"num": 23, "q": "國考考官能基優先順序時，最常見的考法是什麼？", "options": ["要求默寫全部優先順序口訣", "給一個多官能基分子要求判斷正確的命名字尾", "完全不會考相關內容", "只考分子量計算"], "answer": 1, "explain": "國考考官能基優先順序時，最常見的考法是直接給一個帶有多種官能基的分子結構，要求學生判斷哪一個官能基應該當主角決定命名字尾，這需要熟記優先順序口訣並能正確應用到實際結構判斷上。"}, {"num": 24, "q": "主鏈確定後如果有支鏈，支鏈本身的碳鏈長度跟主鏈比較會是什麼關係？", "options": ["支鏈一定比主鏈長", "支鏈一定比主鏈短(或等長但被定義為主鏈以外的部分)", "支鏈跟主鏈長度完全無關", "支鏈永遠只有一個碳"], "answer": 1, "explain": "根據定義，主鏈是分子裡碳數最多的連續鏈，所以任何被歸類為支鏈的部分，碳鏈長度一定不會超過主鏈(否則它自己就會被選為主鏈了)，這個邏輯關係是確認主鏈跟支鏈劃分是否正確的重要檢查點。"}, {"num": 25, "q": "當分子上的官能基是醚基時，因為醚不容易當『主角』官能基，通常會怎麼命名表示醚的存在？", "options": ["完全忽略不命名", "用字首方式(像『甲氧基』)表示連接的烷氧基", "一定要創造新的字尾", "醚基無法被命名"], "answer": 1, "explain": "因為醚的官能基優先順序通常排在比較後面，當分子上有更優先的官能基時，醚基常常會以字首的方式表示(像『甲氧基』表示連接了一個CH3-O-的結構)，而不是當作字尾來命名整個分子。"}, {"num": 26, "q": "為什麼說「先找路、再編號、後列支」是命名口訣？", "options": ["跟命名步驟完全無關的隨意口訣", "對應確定主鏈、決定編號方向、標示支鏈跟官能基位置的三個固定步驟", "純粹是押韻沒有實際對應內容", "只適用於英文命名不適用中文"], "answer": 1, "explain": "這個口訣精準對應IUPAC命名的三個核心步驟：『先找路』對應確定主鏈(母體名稱)，『再編號』對應決定讓官能基拿到最小編號的方向，『後列支』對應按字母順序標示所有支鏈的名稱跟位置，記住這個口訣有助於按部就班完成命名而不遺漏步驟。"}, {"num": 27, "q": "如果一個分子結構同時有羰基(酮)跟OH基(醇)，依優先順序誰當主角？", "options": ["醇基優先", "酮基優先，因為其優先順序比醇高", "兩者相等需要看分子大小", "完全沒有判斷依據"], "answer": 1, "explain": "依照優先順序口訣，酮的優先順序排在醇之前(『酸大於酯大於醛大於酮大於醇大於胺』)，所以當這兩種官能基同時出現在分子上時，酮基會當主角決定命名字尾，OH基則退居變成字首。"}, {"num": 28, "q": "為什麼在判斷主鏈時，不能只看分子結構圖『畫起來』的角度跟方向？", "options": ["因為畫圖角度跟真實的碳鏈連續性無關，必須逐一數碳確認", "因為畫圖角度才是判斷主鏈唯一的依據", "因為主鏈跟碳鏈連續性完全無關", "跟畫圖角度的判斷方式完全一致沒有區別"], "answer": 0, "explain": "分子結構圖的畫法(角度、轉折方式)跟真正決定主鏈的『碳鏈連續性跟總碳數』是兩個不同的概念，畫圖時為了排版方便可能會讓某條鏈看起來特別直或特別長，但真正的主鏈判斷必須透過邏輯地逐一數每條可能路徑的碳原子數量來確認，不能單純依賴視覺印象。"}, {"num": 29, "q": "當支鏈不只一種類型(像同時有甲基跟乙基)時，命名順序怎麼安排？", "options": ["先寫碳數較多的乙基再寫甲基", "按字母順序排列，乙基(e)會排在甲基(m)前面還是後面要看實際拼音或慣用字母排序", "完全不需要排序", "隨意排列即可"], "answer": 1, "explain": "不同類型的支鏈在命名時要依照字母順序排列(在英文命名系統裡是依照字母abc排序，中文翻譯命名則依照慣用順序排列)，這個規則確保不同人命名同一個分子時能得到一致的書寫順序，避免混淆。"}, {"num": 30, "q": "國考考碳鏈支鏈判斷時，常見的「結構陷阱」類型是什麼？", "options": ["分子完全沒有任何支鏈", "看似最長但其實不是真正主鏈的誤導性結構", "所有分子都沒有陷阱", "跟結構判斷完全無關的記憶題"], "answer": 1, "explain": "國考常設計「看似最長但其實不是主鏈」的誤導性結構，讓學生單憑視覺印象就誤判主鏈位置，正確的應對方式是訓練自己針對每個可能的鏈路徑逐一仔細數碳數，而不是憑直覺一眼判斷哪條線看起來最長最明顯。"}, {"num": 31, "q": "羰基(酮、醛)決定命名字尾時，通常用什麼樣的字尾表示？", "options": ["『醇』", "『酸』", "跟酮、醛相對應的特定字尾(如酮字尾、醛字尾)", "完全沒有固定字尾規則"], "answer": 2, "explain": "當酮或醛是分子上優先順序最高的官能基時，會用對應酮或醛的特定字尾來表示(中文命名習慣加上『酮』或『醛』字)，這個字尾直接告訴讀者分子上最重要的官能基是哪一種。"}, {"num": 32, "q": "為什麼羧酸在官能基優先順序裡通常排在最前面？", "options": ["因為羧酸分子量最大", "因為羧酸結合了羰基的反應性跟最強的酸性，氧化程度最高", "純粹是隨意規定沒有化學意義", "因為羧酸最少見"], "answer": 1, "explain": "羧酸結合了羰基(缺電子碳)的反應性跟比醇更強的酸性(因為共振穩定效果)，整體氧化程度在常見官能基裡是最高的，這個『集大成』的特性讓羧酸在優先順序裡通常排在最前面，當分子上有羧酸基時幾乎都會由它主導命名字尾。"}, {"num": 33, "q": "當一個分子的主鏈上同時存在多個官能基(像羧酸又有酮)，除了優先順序外，還需要做什麼？", "options": ["只需要選出優先官能基不需要其他步驟", "次要官能基要用字首方式表示其存在跟位置", "完全省略次要官能基", "用完全不同的命名系統"], "answer": 1, "explain": "除了選出優先順序最高的官能基作為命名字尾外，分子上其他次要的官能基依然需要用字首的方式(搭配對應的位置編號)清楚標示出來，確保完整的分子結構資訊都被包含在最終的命名裡，不會有遺漏。"}, {"num": 34, "q": "國考考命名題時，為什麼建議按部就班依照固定步驟操作而不要憑直覺跳著做？", "options": ["因為固定步驟比較浪費時間沒有必要", "因為複雜結構容易在跳步驟時漏掉判斷依據(像漏看某個官能基或支鏈)導致命名錯誤", "跟操作步驟順序完全無關", "直覺判斷永遠比按步驟更準確"], "answer": 1, "explain": "複雜的有機分子結構可能同時包含多個支鏈跟官能基，如果不按照固定的步驟(先確定主鏈、再決定編號方向、最後列出所有支鏈官能基)逐一仔細檢查，很容易在跳著直覺判斷的過程中漏看某個細節(像漏掉一個次要官能基或支鏈)，導致最終命名出現錯誤，這也是國考設計複雜結構考題時最常考驗的細心程度。"}, {"num": 35, "q": "胺類官能基在優先順序裡通常排在比較後面，這個排序對命名胺基酸時造成什麼影響？", "options": ["完全沒有任何影響", "讓羧酸基而非胺基決定胺基酸的主要命名字尾", "讓胺基酸無法被命名", "讓胺基酸只能用俗名稱呼"], "answer": 1, "explain": "因為胺類在官能基優先順序裡排在比較後面(低於羧酸)，這直接影響了胺基酸的命名邏輯：羧酸基會當主角決定字尾，胺基則退居變成字首(像『胺基』加在名稱前面)，這個命名上的『降階』安排，也呼應了胺基酸在生理環境下羧酸基酸性表現更直接相關的化學特性。"}, {"num": 36, "q": "總結來說，命名導航想傳達的核心概念是什麼？", "options": ["命名只要死記每個化合物的名字就好", "命名是一套有固定邏輯順序的系統，理解這個順序比死記每個名字更重要", "命名規則完全隨意沒有邏輯", "碳鏈長度跟命名完全無關"], "answer": 1, "explain": "命名導航想傳達的核心概念是：IUPAC命名不是要你死記每一個化合物獨立的名字，而是一套有固定邏輯順序的系統(先找主鏈、再決定編號方向、最後標示支鏈跟官能基)，一旦理解這個底層邏輯，面對任何新的、沒見過的複雜分子結構，都能依照同樣的步驟推導出正確的名稱，這比單純背誦大量個別化合物名稱更有效率也更能應對考試裡各種變化型的結構。"}]}, {"id": "electron_flow", "zh": "電子流導航", "icon": "⚡", "color": "#7c3aed", "essence_zh": "電子流導航是整張OrgChemMap最核心的部分：所有有機反應的本質都是「電子從多的地方流向少的地方」，親核攻擊跟親電攻擊描述電子流動的兩個方向，取代、加成、消除則是這個電子流動完成後分子整體結構改變的三種模式。", "nodes": [{"id": "nucleophilic_attack", "zh": "親核攻擊", "essence_zh": "親核者(electron-rich，帶有多餘電子或孤對電子)主動把自己的電子送出去，攻擊另一個分子上電子不足的位置，這個「送電子」的動作就是親核攻擊", "physical_picture_zh": "想像親核者是一個很有錢、很大方的人(帶有多餘的孤對電子)，看到旁邊有人很缺錢(親電的碳，電子不足)，就主動把自己的錢(電子)送過去跟對方共用，這個送錢的動作形成新的化學鍵", "trick_zh": "記「親核者愛碳，因為碳常常因為接了電子小氣鬼的氧或氮而變得電子不足」，看到醛酮、酯這類分子就要想到親核者會去攻擊哪個碳", "mindmap_zh": ["親核者帶多餘電子或孤對電子", "主動進攻電子不足的位置", "常見親核者：水、醇、胺、氫氧根", "目標常是羰基碳或飽和碳鹵化物的碳", "形成新共價鍵同時舊鍵可能斷裂"], "exam_point_zh": "國考很愛考「判斷誰是親核者誰是親電者」，記住帶負電、有孤對電子、或電子云豐富的就是親核者", "medical_link_zh": "DNA烷化劑類抗癌藥物(像cyclophosphamide)的作用機轉，就是利用高度親電的結構去吸引DNA上鹼基的親核位置(像氮原子的孤對電子)進行攻擊，造成DNA損傷阻止癌細胞分裂"}, {"id": "electrophilic_attack", "zh": "親電攻擊", "essence_zh": "親電者(electron-poor，帶正電或電子不足)主動去搶奪另一個分子上電子豐富的位置，這個「搶電子」的動作就是親電攻擊，常見於攻擊雙鍵、三鍵的π電子雲", "physical_picture_zh": "想像親電者是一個很缺錢的人(帶正電或電子不足)，看到旁邊有一片鬆散又裕的電子雲(像烯類的π電子)，就主動衝過去搶一點電子來用，這個搶電子的動作會破壞原本的π鍵", "trick_zh": "記「親電者愛雙鍵跟三鍵，因為π電子雲鬆散好搶」，看到烯類炔類就要想到親電者會攻擊這個π電子雲", "mindmap_zh": ["親電者帶正電或電子不足", "主動搶奪電子豐富的位置", "常見親電者：氫離子、溴分子、路易士酸", "目標常是烯炔類的π電子雲", "搶奪後π鍵斷裂形成新的σ鍵"], "exam_point_zh": "國考常考溴加成到雙鍵的機轉，第一步就是溴分子(被誘導出微弱正電的一端)以親電者身份攻擊雙鍵的π電子雲", "medical_link_zh": "許多藥物代謝過程中會產生高度親電的中間產物(像acetaminophen過量代謝產生的NAPQI)，這些親電中間產物會攻擊肝臟蛋白質或DNA上電子豐富的位置，是藥物造成肝毒性的重要化學機轉"}, {"id": "addition_reaction", "zh": "加成反應", "essence_zh": "加成反應是把一個新的原子或原子團「加」到雙鍵或三鍵上，雙鍵或三鍵因此被打開變成單鍵，整個分子的原子總數變多但碳鏈骨架不會斷裂", "physical_picture_zh": "想像雙鍵是一條本來只夠兩個人手拉手站著(σ鍵)、外面還松垷的繩子(π鍵)，加成反應就是把這條松的繩子剪斷，讓兩個新的東西各自接到原本雙鍵的兩端，整體變得『更胖』(原子數變多)但骨架沒有斷掉", "trick_zh": "記「加成＝雙鍵變單鍵＋多了兩個新朋友」，是烯炔類最重要也最常考的反應類型", "mindmap_zh": ["作用對象是雙鍵或三鍵", "π鍵打開變成單鍵", "新原子團加到斷開的兩端", "原子總數增加", "碳鏈骨架保持完整不斷裂"], "exam_point_zh": "國考常考馬可尼可夫法則(Markovnikov's rule)：氫加成到含氫較多的碳上，這個法則的本質是加成過程中先形成的中間體(碳陽離子)要越穩定越好", "medical_link_zh": "人造氫化油的製程就是把不飽和脂肪酸的雙鍵進行氫加成反應，讓原本液態的油變成固態的人造奶油，但這個過程可能產生對心血管有害的反式脂肪結構"}, {"id": "elimination_reaction", "zh": "消除反應", "essence_zh": "消除反應是加成反應的「相反操作」：從一個飽和分子上拿掉兩個原子或原子團(通常是一個氫加一個其他離去基)，原本的單鍵因此變成雙鍵，分子整體的原子總數變少", "physical_picture_zh": "想像原本兩個人各自拉著一條手(單鍵)，消除反應就是把其中一個人(離去基)跟旁邊的一個氫一起『請出場』，剩下的兩個碳原子為了補上空出來的位置，會多伸出一隻手互相緊緊拉住(形成雙鍵)", "trick_zh": "記「消除＝單鍵變雙鍵－少了兩個東西」，剛好跟加成反應的方向完全相反，這兩個概念要放在一起記才不會搞混", "mindmap_zh": ["作用對象是飽和的單鍵碳", "拿掉一個氫加一個離去基", "單鍵因此變成雙鍵", "原子總數減少", "跟加成反應方向相反"], "exam_point_zh": "國考常考消除反應跟取代反應的競爭關係，同一個飽和碳鹵化物在強鹼、高溫的環境下傾向消除，在強親核者、低溫的環境下傾向取代", "medical_link_zh": "某些藥物代謝過程中會發生消除反應，產生帶有雙鍵的代謝產物，這類雙鍵代謝物有時反應性會比原藥物更強，需要評估是否造成額外的毒性風險"}], "quiz": [{"num": 1, "q": "親核者的核心特徵是什麼？", "options": ["帶正電或電子不足", "帶有多餘電子或孤對電子", "完全不帶電", "只能跟金屬反應"], "answer": 1, "explain": "親核者(electron-rich)帶有多餘電子或孤對電子，這些多出來的電子讓它主動想把電子送出去，攻擊另一個分子上電子不足的位置，這是它「親核」(喜歡接近原子核缺電子處)這個名字的由來。"}, {"num": 2, "q": "親電者的核心特徵是什麼？", "options": ["帶有多餘的孤對電子", "帶正電或電子不足", "完全不參與任何反應", "只能跟非金屬反應"], "answer": 1, "explain": "親電者(electron-poor)帶正電或電子不足，這讓它主動想去搶奪別的分子上電子豐富的位置(像雙鍵三鍵的π電子雲)，這是它「親電」(喜歡接近電子豐富處)這個名字的由來。"}, {"num": 3, "q": "親核者常見的攻擊目標是哪種類型的位置？", "options": ["電子豐富的雙鍵", "電子不足的羰基碳或飽和碳鹵化物的碳", "完全沒有電荷差異的位置", "只攻擊金屬離子"], "answer": 1, "explain": "親核者主動把電子送出去，所以它要找的目標是電子不足的位置，像醛酮羰基的碳(因為被氧搶走電子)，或是碳鹵化物上接著鹵素的碳(因為鹵素的電負度也很高會搶走電子)，這些都是親核者最常見的攻擊目標。"}, {"num": 4, "q": "親電者常見的攻擊目標是哪種類型的位置？", "options": ["電子不足的羰基碳", "雙鍵跟三鍵裡鬆散裸露的π電子雲", "只攻擊帶負電的離子", "完全不攻擊任何位置"], "answer": 1, "explain": "親電者要搶電子，所以它的目標是電子豐富、容易被搶走電子的位置，烯類炔類那些鬆散裸露的π電子雲就是最常見的攻擊目標，這也是為什麼親電反應常常發生在雙鍵跟三鍵上。"}, {"num": 5, "q": "水、醇、胺這些常見的親核者，它們共同擁有什麼結構特徵？", "options": ["都帶正電", "都帶有孤對電子(在氧或氮原子上)", "都完全沒有官能基", "都是碳氫化合物不含其他元素"], "answer": 1, "explain": "水(氧上有孤對電子)、醇(氧上有孤對電子)、胺(氮上有孤對電子)，這些常見的親核者都在氧或氮原子上帶有沒有跟其他原子共用的孤對電子，這對孤對電子正是它們能主動送出去攻擊缺電子位置的關鍵能力來源。"}, {"num": 6, "q": "加成反應的核心定義是什麼？", "options": ["把雙鍵或三鍵打開，新原子團加到斷開的兩端", "把單鍵打斷形成雙鍵", "完全不涉及鍵的變化", "只發生在飽和碳氫化合物上"], "answer": 0, "explain": "加成反應的核心是把雙鍵或三鍵的π鍵部分打開(變成單鍵)，同時讓新的原子或原子團分別加到原本雙鍵三鍵兩端的碳上，整個過程讓分子的原子總數增加，但碳鏈骨架保持完整。"}, {"num": 7, "q": "消除反應的核心定義是什麼？", "options": ["把單鍵打開加上新原子團", "從飽和碳上拿掉一個氫加一個離去基，單鍵變成雙鍵", "完全不涉及鍵的變化", "只發生在已經有雙鍵的分子上"], "answer": 1, "explain": "消除反應的核心是從一個飽和(單鍵)碳上，同時拿掉一個氫原子跟一個離去基(像鹵素)，原本兩個碳之間的單鍵因此「升級」變成雙鍵，整個過程讓分子的原子總數減少，方向剛好跟加成反應相反。"}, {"num": 8, "q": "加成反應跟消除反應在分子原子總數的變化上，方向是什麼關係？", "options": ["完全相同的方向", "完全相反，加成增加原子數、消除減少原子數", "兩者都增加原子數", "兩者都減少原子數"], "answer": 1, "explain": "加成反應是把新的原子團『加』進雙鍵三鍵裡，原子總數會增加；消除反應是把原子團『拿掉』讓單鍵變雙鍵，原子總數會減少，這兩個反應的方向剛好完全相反，是有機化學裡一組重要的對照概念。"}, {"num": 9, "q": "溴分子加成到雙鍵的反應，第一步溴扮演的是什麼角色？", "options": ["親核者", "親電者，攻擊雙鍵的π電子雲", "完全不參與反應的旁觀者", "只在反應結束後才出現"], "answer": 1, "explain": "溴分子雖然整體不帶電，但在接近雙鍵電子雲豐富的區域時，會被誘導出微弱的極性(一端帶部分正電)，這個帶部分正電的一端會以親電者的身份主動攻擊雙鍵鬆散裸露的π電子雲，啟動整個加成反應。"}, {"num": 10, "q": "馬可尼可夫法則(Markovnikov's rule)描述的是哪一類反應的選擇性？", "options": ["消除反應的選擇性", "氫加成到雙鍵時氫傾向加到含氫較多的碳上", "跟加成反應完全無關", "只適用於三鍵不適用雙鍵"], "answer": 1, "explain": "馬可尼可夫法則描述的是氫加成到雙鍵時的選擇性傾向：氫(或帶正電的部分)傾向加到原本含氫較多的碳上，這個法則的化學本質是因為反應過程中形成的中間體(碳陽離子)要越穩定越好，含氫較多的碳形成的中間體通常更穩定。"}, {"num": 11, "q": "消除反應在什麼樣的反應環境條件下比較容易發生？", "options": ["弱酸、低溫的環境", "強鹼、高溫的環境", "完全沒有特定條件影響", "只在真空環境下發生"], "answer": 1, "explain": "消除反應通常在強鹼、高溫的環境下比較容易發生，因為強鹼有利於拔走氫離子、高溫提供足夠的能量克服反應的活化能障礙，這跟取代反應通常偏好的條件(強親核者、低溫)形成有意思的對照跟競爭關係。"}, {"num": 12, "q": "同一個飽和碳鹵化物，在不同的反應條件下，可能傾向發生哪兩種互相競爭的反應？", "options": ["氧化反應跟還原反應", "取代反應跟消除反應", "加成反應跟氧化反應", "完全不會發生任何反應"], "answer": 1, "explain": "同一個飽和碳鹵化物分子，依照反應環境的不同(像鹼的強弱、溫度高低、溶劑種類)，可能傾向發生取代反應(離去基被另一個親核者取代)或消除反應(拿掉氫跟離去基形成雙鍵)，這兩種反應路徑互相競爭，最終產物比例會依條件改變。"}, {"num": 13, "q": "DNA烷化劑類抗癌藥物的作用機轉，跟電子流導航的什麼概念最相關？", "options": ["跟電子流完全無關純粹是物理破壞", "利用高度親電的藥物結構去攻擊DNA鹼基上親核位置(像氮的孤對電子)", "利用消除反應破壞DNA", "利用加成反應修復DNA"], "answer": 1, "explain": "DNA烷化劑類抗癌藥物(像cyclophosphamide)的結構設計成高度親電，這個親電結構會主動去吸引並攻擊DNA鹼基上電子豐富的親核位置(像氮原子的孤對電子)，這個攻擊造成DNA損傷，進而阻止癌細胞繼續分裂複製。"}, {"num": 14, "q": "Acetaminophen(常見退熱止痛藥)過量代謝產生的NAPQI，化學特性上屬於什麼類型？", "options": ["強親核者", "高度親電的中間產物", "完全不帶電的中性分子", "強鹼性物質"], "answer": 1, "explain": "Acetaminophen過量使用時，部分代謝途徑會產生NAPQI這個高度親電的中間產物，這個親電產物會攻擊肝臟蛋白質或DNA上電子豐富的位置，正常情況下身體有解毒機制能中和它，但過量使用時這個解毒能力可能不足，造成肝毒性。"}, {"num": 15, "q": "為什麼烯類炔類的π電子雲容易被親電者攻擊？", "options": ["因為π電子雲被抓得特別緊牢固", "因為π電子雲鬆散、離原子核較遠，容易被搶走", "因為烯炔類完全沒有電子", "跟電子分布的緊鬆完全無關"], "answer": 1, "explain": "π鍵的電子雲分布在原子核連線的上下兩側，相對σ鍵(集中在連線正中間)被抓得鬆散很多，這個鬆散的特性讓π電子容易被想搶電子的親電者奪走，這也是雙鍵三鍵比單鍵更容易發生加成反應的根本原因。"}, {"num": 16, "q": "氫氧根(OH-)在反應中通常扮演什麼角色？", "options": ["親電者", "親核者(因為帶負電、有多餘電子)", "完全不參與任何反應", "只能當催化劑不能直接反應"], "answer": 1, "explain": "氫氧根帶負電，氧原子上有多餘的電子可以送出去，所以它是典型的親核者，常見於取代反應(攻擊飽和碳鹵化物的碳)或當作強鹼促進消除反應的發生。"}, {"num": 17, "q": "路易士酸(Lewis acid)在反應中通常扮演什麼角色？", "options": ["親核者", "親電者(因為它能接受電子，本身電子不足)", "完全中性不參與反應", "只能跟其他酸反應"], "answer": 1, "explain": "路易士酸的定義是能接受電子對的物質，這代表它本身是電子不足的，在有機反應裡常常扮演親電者的角色，或是幫忙活化另一個親電者(像幫忙讓溴分子更容易誘導出正電性)。"}, {"num": 18, "q": "加成反應完成後，原本雙鍵兩端的碳，鍵的類型會變成什麼？", "options": ["保持雙鍵不變", "變成單鍵", "變成三鍵", "完全消失不存在化學鍵"], "answer": 1, "explain": "加成反應的本質就是把雙鍵的π鍵部分打開，讓新的原子團分別加到兩端，反應完成後原本的雙鍵會變成單鍵(σ鍵)，兩端碳上則各多了一個新接上的原子或原子團。"}, {"num": 19, "q": "消除反應完成後，原本相鄰兩個碳之間的鍵，會從什麼變成什麼？", "options": ["從雙鍵變成單鍵", "從單鍵變成雙鍵", "從單鍵變成三鍵", "完全不會改變鍵的類型"], "answer": 1, "explain": "消除反應的本質是拿掉一個氫跟一個離去基，兩個碳原子為了補上空出來的鍵位，會多形成一個鍵連接彼此，原本的單鍵因此『升級』變成雙鍵，這是消除反應最重要的結構變化結果。"}, {"num": 20, "q": "為什麼說親核攻擊跟親電攻擊是電子流動的『兩個方向』？", "options": ["跟電子流動方向完全無關的兩個獨立概念", "親核攻擊是電子被主動送出去，親電攻擊是電子被主動搶過來，方向相反", "兩者描述的是完全相同的現象", "親核跟親電都不涉及電子的實際移動"], "answer": 1, "explain": "親核攻擊的視角是『電子豐富的一方主動把電子送出去』，親電攻擊的視角則是『電子不足的一方主動把電子搶過來』，雖然描述的角度不同(誰是主動方)，但本質上都是同一個電子從多的地方流向少的地方的過程，只是站在不同的反應物角度去描述這個流動。"}, {"num": 21, "q": "取代反應(雖然本身不是這次四個節點之一，但常與消除反應比較)跟消除反應最大的差異是什麼？", "options": ["取代反應是離去基被另一個基團換掉，分子骨架不變；消除反應是形成新雙鍵，原子數減少", "兩者完全相同沒有差異", "取代反應一定發生在雙鍵上", "消除反應一定不涉及離去基"], "answer": 0, "explain": "取代反應是把一個原子團(離去基)直接換成另一個新的原子團，分子的整體骨架架構基本不變(只是某個位置的取代基換了)；消除反應則是拿掉兩個東西形成新的雙鍵，導致原子總數減少，兩者在產物結構跟反應方向上有根本性的不同。"}, {"num": 22, "q": "為什麼強親核者、低溫的環境傾向讓取代反應發生而不是消除反應？", "options": ["強親核者更傾向直接進攻碳形成新鍵(取代)，低溫不利於消除反應需要的較高活化能", "跟反應條件完全無關，純屬隨機", "強親核者反而更容易讓消除反應發生", "低溫只會讓所有反應都停止不發生任何反應"], "answer": 0, "explain": "強親核者的特性是傾向直接進攻電子不足的碳形成新的共價鍵(這正是取代反應的核心步驟)，而消除反應通常需要較高的活化能(常需要高溫提供)才能讓氫跟離去基同時被拔除形成雙鍵，低溫環境下這個能量門檻較難跨過，所以低溫搭配強親核者更傾向發生取代而非消除。"}, {"num": 23, "q": "親電者跟親核者在反應中，誰是『主動進攻』的一方？", "options": ["親核者攻擊缺電子位置時是主動方；親電者攻擊電子豐富位置時是主動方；兩種情境各自的主動方不同", "永遠只有親核者是主動方", "永遠只有親電者是主動方", "兩者都永遠是被動方"], "answer": 0, "explain": "親核攻擊跟親電攻擊是兩種不同的反應情境：親核攻擊的情境裡，親核者(電子豐富)是主動出擊送電子的一方；親電攻擊的情境裡，親電者(電子不足)是主動出擊搶電子的一方，理解這兩種情境分別誰是主動方，有助於正確判斷反應機轉的方向跟產物。"}, {"num": 24, "q": "如果一個分子同時帶有π電子雲(雙鍵)又處於強親電者存在的環境，最可能先發生什麼類型的反應？", "options": ["消除反應", "親電加成反應(親電者攻擊π電子雲)", "完全不發生反應", "還原反應"], "answer": 1, "explain": "當分子上有容易被攻擊的雙鍵π電子雲，又處在強親電者(像溴分子、酸)存在的環境，最可能先發生的就是親電加成反應：親電者主動攻擊鬆散的π電子雲，啟動加成反應的第一步，這是烯類化學最核心、最常考的反應類型。"}, {"num": 25, "q": "電子流動的方向，本質上反映了化學系統想要達到什麼狀態？", "options": ["完全混亂沒有方向性的隨機運動", "電荷跟能量分布趨向更穩定平衡的狀態", "電子永遠停留在原本的位置不會移動", "跟系統穩定性完全無關"], "answer": 1, "explain": "有機反應裡電子從多的地方流向少的地方，本質上反映了整個化學系統想要從『不穩定的電荷不均勻分布』狀態，轉變成『更穩定的電荷分布或新形成的化學鍵』狀態，這個趨向穩定的驅動力，正是理解為什麼某個反應會自然發生的關鍵思路，而不是單純死記哪個反應物跟哪個反應物會湊在一起。"}, {"num": 26, "q": "為什麼三級碳鹵化物在強鹼存在下特別容易發生消除反應而不是取代反應？", "options": ["三級碳周圍立體障礙大，親核者難以從背面進攻進行取代，相對更容易發生消除", "三級碳完全沒有立體障礙", "跟立體障礙完全無關", "三級碳鹵化物無法發生任何反應"], "answer": 0, "explain": "三級碳周圍接了三個碳基團，立體空間擁擠，這讓親核者很難從特定角度直接進攻碳中心完成取代反應；相對來說，消除反應只需要拔走旁邊碳上的氫(立體要求較寬鬆)，所以三級碳鹵化物在強鹼環境下通常更傾向發生消除反應。"}, {"num": 27, "q": "親核者跟親電者的反應，最終的共同結果是什麼？", "options": ["完全沒有新的化學鍵形成", "通常形成新的共價鍵，連接原本兩個獨立的分子或基團", "電子完全消失不見", "原子數量永遠不變"], "answer": 1, "explain": "無論是親核攻擊還是親電攻擊，最終的共同結果通常都是形成一個新的共價鍵，把原本兩個獨立存在的分子或基團連接在一起(或者讓原本的鍵結構發生改變)，這是電子流動最終留下的具體『足跡』，也是反應地圖裡能觀察到的實際產物變化。"}, {"num": 28, "q": "為什麼說「電子流是反應的因，反應式是電子流的果」？", "options": ["反應式跟電子流完全無關的兩件事", "因為電子的實際移動方向決定了最終會形成什麼產物，反應式只是記錄這個結果", "因為反應式比電子流更重要更基本", "電子流跟反應式完全是同一件事沒有先後關係"], "answer": 1, "explain": "這句話的核心邏輯是：電子實際怎麼移動(從哪裡流向哪裡)，才是決定最終會形成什麼樣產物結構的根本原因；反應式(像A+B→C)只是事後觀察並記錄下這個結果的一種簡化表示法，如果只背反應式而不理解背後電子流動的原因，遇到沒見過的新反應就很難類推應用。"}, {"num": 29, "q": "碳陽離子(carbocation)在加成反應的機轉中扮演什麼角色？", "options": ["跟加成反應完全無關", "常作為反應過程中暫時形成的中間體，其穩定性影響最終產物的選擇性", "是反應的最終穩定產物", "只在消除反應中出現"], "answer": 1, "explain": "在某些加成反應(像氫加成到雙鍵)的機轉裡，反應過程中會暫時形成一個帶正電的碳陽離子中間體，這個中間體的穩定程度(越多碳接在帶正電的碳上通常越穩定)會影響後續親核者攻擊的位置跟最終產物的比例，這正是馬可尼可夫法則背後的化學原理。"}, {"num": 30, "q": "如果一個反應物同時可以當親核者也可以當親電者(視情境而定)，這種雙重身份在化學上稱為什麼概念的展現？", "options": ["跟化學概念完全無關純粹是巧合", "反映了同一個分子在不同的反應夥伴跟條件下，可能展現出不同的電子流動角色", "所有分子都不可能有這種雙重身份", "這種情況在有機化學裡完全不存在"], "answer": 1, "explain": "確實有些分子(像某些醇或胺)依照反應夥伴的不同(遇到比自己更缺電子的對象時當親核者，遇到比自己更不缺電子的對象時可能反過來被攻擊)，可能在不同情境下展現不同的角色，這提醒我們判斷親核或親電身份時，要考慮『相對』的電子密度比較，而不是把每個分子都貼上絕對固定的標籤。"}, {"num": 31, "q": "為什麼理解電子流比死記反應式更能應對國考的變化型考題？", "options": ["因為國考完全不會考變化型結構", "因為理解電子流的邏輯後，遇到沒見過的新結構也能推導出合理的反應方向", "死記反應式永遠比理解原理更有效", "兩種方法的效果完全相同沒有差異"], "answer": 1, "explain": "國考常常會出現課本沒有直接列出、但概念延伸的新結構或新反應情境，如果只是死記固定反應式，遇到變化型考題時容易因為『沒背過這一題』而無法作答；但如果理解了電子流動的底層邏輯(找出哪裡電子多、哪裡電子少)，就能用同樣的思考方式去推導任何新結構可能發生的反應，這是電子流導航想培養的核心能力。"}, {"num": 32, "q": "親核攻擊形成新共價鍵的同時，原本目標碳上的舊鍵可能發生什麼變化？", "options": ["舊鍵完全不受任何影響", "舊鍵可能斷裂(像取代反應裡的離去基離開)或維持(像加成反應裡羰基雙鍵打開)", "舊鍵永遠會變成三鍵", "跟舊鍵的變化完全無關"], "answer": 1, "explain": "親核攻擊形成新鍵的同時，原本目標碳上的鍵結構可能因為反應類型不同而有不同的變化：在取代反應裡，離去基會直接斷裂離開；在加成反應裡(像攻擊羰基)，原本的雙鍵會打開變成單鍵，這個搭配的鍵變化模式正是區分不同反應類型的重要線索。"}, {"num": 33, "q": "為什麼說「看到醛酮類分子，就要想到親核者可能去攻擊哪個碳」？", "options": ["因為醛酮的羰基碳因氧搶電子而缺電子，是親核者天然的攻擊目標", "因為醛酮完全不會跟任何親核者反應", "因為醛酮只能跟親電者反應", "跟羰基缺電子的特性完全無關"], "answer": 0, "explain": "醛酮類分子的羰基碳因為旁邊氧原子的電負度較高，把雙鍵電子拉走，讓這個碳變得相對電子不足，這正是親核者最天然、最容易被吸引去攻擊的目標位置，這個邏輯連結(看到羰基就想到親核者攻擊)是醛酮反應地圖裡最核心的思考起點。"}, {"num": 34, "q": "加成反應在工業跟生活上的應用，氫化油的製造正是利用了什麼原理？", "options": ["利用消除反應把雙鍵變成更多雙鍵", "利用氫加成反應把不飽和脂肪酸的雙鍵打開變成單鍵，讓液態油變成固態", "利用取代反應把脂肪酸鏈換成完全不同的結構", "跟加成反應完全無關的另一種化學原理"], "answer": 1, "explain": "氫化油的製造正是典型的加成反應應用：把氫氣加成到不飽和脂肪酸的雙鍵上，讓雙鍵打開變成單鍵(飽和化)，這個過程讓原本液態的不飽和油脂變成固態的氫化油(人造奶油)，但製程中可能意外產生對心血管有害的反式脂肪結構，這是這個工業應用的一個重要副作用考量。"}, {"num": 35, "q": "消除反應在藥物代謝過程中，可能會帶來什麼樣的臨床考量？", "options": ["完全不會影響藥物的代謝跟安全性", "某些藥物代謝產生的雙鍵代謝物可能反應性更強，需要評估額外的毒性風險", "消除反應只會讓藥物完全失去活性沒有其他影響", "消除反應在人體內完全不會發生"], "answer": 1, "explain": "某些藥物在體內代謝過程中可能經歷消除反應，產生帶有新雙鍵的代謝產物，這類雙鍵代謝物因為多了容易被攻擊的π電子雲，反應性有時會比原本的藥物更強，這提醒藥物研發過程中需要仔細評估這些代謝物是否會帶來額外的毒性風險，不能只看原始藥物本身的安全性。"}, {"num": 36, "q": "總結來說，電子流導航想傳達的核心訊息是什麼？", "options": ["每個反應都要單獨死記沒有共通規律", "所有有機反應的本質都是電子從多的地方流向少的地方，理解這個流動方向比背反應式更重要", "電子流跟有機反應完全沒有關係", "官能基跟電子流動完全無關"], "answer": 1, "explain": "電子流導航想傳達的核心訊息是：不論看起來多麼複雜多樣的有機反應，本質上都可以歸結到同一個簡單的原則——電子會從電子密度高的地方(親核者)流向電子密度低的地方(親電者)，親核攻擊、親電攻擊、加成、消除這些看似不同的反應類型，都是這個單一電子流動原則在不同情境下的具體展現，掌握這個原則，比片段式地死記每一條反應式，更能讓你在面對新的、沒見過的有機化學問題時依然能推理出合理的答案。"}]}, {"id": "reaction", "zh": "反應地圖", "icon": "🗺️", "color": "#dc2626", "essence_zh": "反應地圖把電子流導航的抽象原理，套用到醇、醛酮、羧酸、酯這四個最重要的官能基家族上，看每個官能基真實會發生什麼反應、為什麼會發生，而不是死記每一條反應式。", "nodes": [{"id": "alcohol_reaction", "zh": "醇的反應地圖", "essence_zh": "醇的反應幾乎都圍繞著那個OH基：可以被氧化(失去氫變成醛或酮)、可以跟酸反應形成酯(脫水縮合)、也可以整個被取代掉(OH被其他原子團取代)", "physical_picture_zh": "把醇的OH基想成一個多功能的「萬用接口」：氧化反應是把接口上的氫拔掉讓碳氧之間多形成一個鍵(變成羰基)；跟酸反應形成酯是把整個OH換成另一個含氧結構；取代反應則是把整個OH直接換成別的原子團", "trick_zh": "記「醇氧化要看碳上還有幾個氫」：一級醇(碳上接兩個氫)能氧化成醛甚至再氧化成羧酸，二級醇(碳上接一個氫)只能氧化成酮就停了，三級醇(碳上沒有氫)完全不能被氧化", "mindmap_zh": ["一級醇氧化成醛再到羧酸", "二級醇氧化成酮就停止", "三級醇完全無法氧化", "醇加羧酸脫水形成酯", "醇的OH也能被取代成其他基團"], "exam_point_zh": "國考最愛考三級醇為什麼不能氧化，答案是氧化反應需要碳上有氫被拔掉形成新的碳氧鍵，三級醇的碳已經被三個碳佔滿沒有氫可以拔", "medical_link_zh": "酒精(乙醇)在肝臟被氧化成乙醛(一級醇氧化成醛)，乙醛再被氧化成乙酸，這個氧化路徑的中間產物乙醛具有相當的毒性，是造成宿醉跟肝臟損傷的重要化學原因"}, {"id": "aldehyde_ketone_reaction", "zh": "醛酮的反應地圖", "essence_zh": "醛酮的反應幾乎都圍繞著那個缺電子的羰基碳：親核者會攻擊這個碳形成新的含氧或含氮加成產物，醛還能因為旁邊有氫而被進一步氧化成羧酸", "physical_picture_zh": "把羰基碳想成一個「電子很餓」隨時等著被餵食的位置，水、醇、胺這些帶有孤對電子的親核者輪流上門餵食(進行加成)，餵食完成後產物的具體樣子(半縮醛、縮醛、亞胺等)取決於餵的是哪一種親核者", "trick_zh": "記「醛能被氧化(因為碳上還有氫)，酮不能被氧化(碳上沒有氫可以拔)」，這跟醇的氧化邏輯是同一套規則的延伸", "mindmap_zh": ["羰基碳是親核者的攻擊目標", "水攻擊形成水合物", "醇攻擊形成半縮醛再縮醛", "胺攻擊形成亞胺", "醛可氧化成羧酸而酮不能"], "exam_point_zh": "國考常考葡萄糖開鏈醛糖跟環狀半縮醛形式之間的平衡，這個平衡正是醛基跟分子內OH基發生半縮醛反應的真實生理範例", "medical_link_zh": "葡萄糖在水溶液中絕大部分時間以環狀半縮醛形式存在(醛基跟分子內的OH反應)，這個環狀結構的穩定性是葡萄糖能安全大量存在於血液中而不會到處跟蛋白質亂反應的化學基礎，但長期高血糖時還是會緩慢進行糖化反應傷害蛋白質"}, {"id": "carboxylic_acid_reaction", "zh": "羧酸的反應地圖", "essence_zh": "羧酸的反應主要圍繞兩個位置：酸性OH氫可以被拔走(展現酸性，跟鹼反應形成鹽)，整個OH也可以被其他含氧或含氮結構取代(形成酯或醯胺)", "physical_picture_zh": "羧酸像是身上同時帶著「兩個開關」的分子：第一個開關是讓酸性OH氫被拔走變成帶負電的羧酸根(跟鹼中和)，第二個開關是把整個OH換成別的結構(像換成另一個碳氧結構變成酯，或換成氮結構變成醯胺)", "trick_zh": "記「羧酸跟鹼反應是『拔氫』，羧酸跟醇反應形成酯是『換OH』」，這是兩種完全不同層次的反應，不要搞混", "mindmap_zh": ["羧酸OH氫具有酸性", "跟鹼反應形成羧酸鹽", "跟醇反應脱水形成酯", "跟胺反應形成醯胺", "醯胺鍵是蛋白質的核心連接"], "exam_point_zh": "國考很愛考羧酸形成醯胺鍵的反應，這個反應正是蛋白質裡胺基酸之間連接(肽鍵)的化學本質，肽鍵其實就是一種醯胺鍵", "medical_link_zh": "胺基酸之間透過羧酸基跟胺基反應形成肽鍵(一種醯胺鍵)，一個個胺基酸串接起來就形成蛋白質，這是羧酸反應地圖跟整個生命運作最直接的連結"}, {"id": "ester_reaction", "zh": "酯的反應地圖", "essence_zh": "酯最重要的反應是水解：在酸或鹼的幫助下，酯會被水重新拆解回原本的羧酸(或羧酸鹽)跟醇，這個水解反應本質上是酯形成反應的逆向操作", "physical_picture_zh": "酯的形成跟水解就像是「組裝」跟「拆解」的兩個方向：羧酸跟醇脫水組裝成酯，加水搭配酸或鹼的幫助則能把組裝好的酯重新拆解回原本的兩個零件(羧酸跟醇)", "trick_zh": "記「鹼性水解叫皂化反應」，因為這個反應正是傳統製造肥皂(油脂水解成脂肪酸鹽跟甘油)的化學原理", "mindmap_zh": ["酯水解拆回羧酸跟醇", "酸性水解是平衡反應可逆", "鹼性水解(皂化)反應不可逆", "皂化是傳統製肥皂原理", "油脂本質上是脂肪酸跟甘油形成的酯"], "exam_point_zh": "國考常考酸性水解(可逆平衡)跟鹼性水解(不可逆，因為形成的羧酸根很穩定不會逆反應)兩者本質上的差異", "medical_link_zh": "人體消化油脂的過程，本質上就是脂肪酶這種酵素催化三酸甘油酯(一種酯)進行水解，把它拆解成游離脂肪酸跟甘油，才能被腸道吸收進入血液循環"}], "quiz": [{"num": 1, "q": "一級醇氧化後最終可以變成什麼官能基？", "options": ["只能變成酮", "能變成醛再進一步氧化成羧酸", "完全不能被氧化", "直接變成酯"], "answer": 1, "explain": "一級醇的碳上接著兩個氫，氧化反應拔掉一個氫先變成醛，醛上還有一個氫可以再被拔掉進一步氧化成羧酸，所以一級醇的氧化路徑是醇→醛→羧酸這個連續的過程。"}, {"num": 2, "q": "二級醇氧化後會變成什麼官能基？最終會停在哪裡？", "options": ["變成醛然後停止", "變成酮，因為碳上沒有更多氫可以拔，氧化到此停止", "變成羧酸", "完全不能被氧化"], "answer": 1, "explain": "二級醇的碳上只接著一個氫，氧化反應拔掉這個氫後變成酮，酮的羰基碳兩邊都接著碳(沒有額外的氫可以再被拔走)，所以二級醇的氧化路徑就停在酮這一步，不會像一級醇那樣繼續氧化成羧酸。"}, {"num": 3, "q": "三級醇為什麼完全不能被氧化？", "options": ["因為三級醇太穩定不參與化學反應", "因為三級醇的碳已經被三個碳佔滿，沒有氫可以被拔走形成新的碳氧鍵", "因為三級醇帶負電", "跟碳上氫的數量完全無關"], "answer": 1, "explain": "醇類氧化反應的本質是拔掉碳上的氫形成新的碳氧鍵，三級醇的碳原子已經被三個其他的碳基團佔滿位置，沒有氫可以被拔走，所以完全沒辦法進行這種氧化反應，這是醇類氧化反應裡最重要也最常考的結構限制規則。"}, {"num": 4, "q": "醛酮反應地圖裡，親核者攻擊的核心目標是哪個位置？", "options": ["碳鏈的末端氫", "缺電子的羰基碳", "氧原子本身", "跟羰基完全無關的其他位置"], "answer": 1, "explain": "醛酮的羰基碳因為旁邊氧原子把雙鍵電子拉走而變得電子不足，這個缺電子的碳正是各種親核者(水、醇、胺)最主要的攻擊目標，攻擊後會形成各種不同的加成產物，依攻擊的親核者種類而有所不同。"}, {"num": 5, "q": "水攻擊羰基碳後會形成什麼產物？", "options": ["縮醛", "水合物", "半縮醛", "亞胺"], "answer": 1, "explain": "水分子的氧上有孤對電子，攻擊醛酮的缺電子羰基碳後，會形成一個水合物產物(羰基碳上多接了一個OH，原本的雙鍵氧變成單鍵氧加氫)，這是醛酮類最基本的親核加成反應之一。"}, {"num": 6, "q": "一個醇分子攻擊羰基碳，第一次跟第二次攻擊分別形成什麼產物？", "options": ["都形成縮醛", "第一次形成半縮醛，第二次(如果再加一個醇)形成縮醛", "完全不會發生反應", "直接形成羧酸"], "answer": 1, "explain": "醇類分子作為親核者第一次攻擊羰基碳，會形成半縮醛(羰基碳變成同時接著OH跟OR的結構)，如果環境裡有更多酸催化跟更多醇存在，半縮醛可以再進一步反應形成縮醛(兩個OR基取代原本的羰基氧)。"}, {"num": 7, "q": "胺攻擊醛酮的羰基碳後，常見形成的產物是什麼？", "options": ["醚", "亞胺(含碳氮雙鍵的結構)", "羧酸", "酯"], "answer": 1, "explain": "胺分子上氮的孤對電子攻擊羰基碳後，經過一系列脫水步驟，最終常常形成帶有碳氮雙鍵的亞胺結構，這是胺類親核者攻擊醛酮特有的產物類型，跟水或醇攻擊形成的含氧產物不同。"}, {"num": 8, "q": "羧酸跟鹼反應，本質上是拔走分子上哪個位置的氫？", "options": ["碳鏈上隨意一個氫", "羧酸基的酸性OH氫", "完全不涉及拔氫的反應", "跟氫無關的反應"], "answer": 1, "explain": "羧酸跟鹼反應的本質是酸鹼中和：鹼把羧酸基上那個帶有酸性的OH氫拔走，形成帶負電的羧酸根(跟鹼提供的正離子配對形成羧酸鹽)，這個反應展現了羧酸的酸性特質。"}, {"num": 9, "q": "羧酸跟醇反應形成酯，這個反應的本質是什麼？", "options": ["拔掉羧酸的氫，跟鹼中和", "羧酸的OH被醇提供的碳氧結構取代(脱水縮合)", "完全不涉及任何鍵的變化", "羰基雙鍵直接消失"], "answer": 1, "explain": "羧酸跟醇反應形成酯，本質上是羧酸的OH基被醇分子提供的碳氧結構取代(這個過程會釐放出一個水分子，所以叫脱水縮合反應)，反應後羧酸失去原本的酸性OH，變成酯的結構，但仍保留羰基的反應性。"}, {"num": 10, "q": "肽鍵(蛋白質裡胺基酸之間的連接)在化學上屬於哪一種鍵？", "options": ["醚鍵", "醯胺鍵(羧酸基跟胺基反應形成)", "碳碳雙鍵", "完全不屬於任何已知的化學鍵類型"], "answer": 1, "explain": "肽鍵其實就是一種醯胺鍵，是一個胺基酸的羧酸基跟另一個胺基酸的胺基發生脱水縮合反應形成的，這個反應跟羧酸跟醇形成酯的邏輯類似，只是親核者換成了帶有孤對電子的胺基而不是醇的OH基。"}, {"num": 11, "q": "酯水解的本質可以理解成什麼反應的逆向操作？", "options": ["醇氧化反應的逆向", "羧酸跟醇形成酯反應的逆向操作", "加成反應的逆向", "跟逆向反應完全無關的全新反應"], "answer": 1, "explain": "酯水解(把酯重新拆解回羧酸跟醇)本質上就是羧酸跟醇形成酯反應的逆向操作：原本形成酯時脫出一個水分子，水解時則是加入一個水分子，把酯鍵打斷重新得到羧酸(或羧酸鹽)跟醇兩個獨立的分子。"}, {"num": 12, "q": "皂化反應指的是哪一種水解方式？", "options": ["酸性水解", "鹼性水解(在強鹼環境下進行的酯水解)", "完全不涉及水解的反應", "只發生在醇類身上的反應"], "answer": 1, "explain": "皂化反應特指在強鹼環境下進行的酯水解反應，這個名稱來自傳統製造肥皂的工藝：把油脂(屬於酯類)放入強鹼溶液中水解，產物是脂肪酸鹽(也就是肥皂的主要成分)跟甘油。"}, {"num": 13, "q": "為什麼鹼性水解(皂化)是不可逆反應，而酸性水解通常是可逆平衡反應？", "options": ["跟可逆性完全無關的隨機現象", "鹼性水解形成的羧酸根透過共振穩定，不容易逆反應重新跟醇結合", "酸性水解形成的產物比鹼性水解更穩定", "兩種水解方式的可逆性完全相同"], "answer": 1, "explain": "鹼性水解形成的羧酸根因為共振效應而非常穩定，這個穩定性讓它『不想』再逆向反應重新跟醇結合形成酯，所以鹼性水解被視為不可逆反應；酸性水解過程中沒有形成這種特別穩定的中間產物，反應方向比較容易隨環境條件(像水量多少)而正逆雙向進行，所以通常被視為可逆平衡反應。"}, {"num": 14, "q": "三酸甘油酯水解後會產生什麼兩種產物？", "options": ["葡萄糖跟胺基酸", "脂肪酸跟甘油", "羧酸跟胺類", "完全不會產生任何產物"], "answer": 1, "explain": "三酸甘油酯本質上是甘油(三元醇)跟三個脂肪酸分子透過酯鍵連接形成的，水解反應(在人體內由脂肪酶催化)會把這個酯鍵打斷，重新釐放出游離的脂肪酸分子跟甘油，這也是人體消化吸收油脂的核心化學步驟。"}, {"num": 15, "q": "乙醇(酒精)在肝臟代謝的第一步氧化，會先變成什麼產物？", "options": ["乙酸", "乙醛", "丙酮", "甘油"], "answer": 1, "explain": "乙醇屬於一級醇，氧化的第一步是拔掉一個氫變成醛，所以乙醇代謝第一步會先變成乙醛，這個中間產物具有相當的毒性，是造成宿醉跟部分肝臟損傷症狀的重要化學原因，後續乙醛還會再被氧化成相對沒那麼毒的乙酸。"}, {"num": 16, "q": "為什麼乙醛(乙醇代謝的中間產物)毒性較強，需要進一步被氧化解毒？", "options": ["乙醛跟乙酸毒性完全相同沒有差異", "乙醛的羰基結構反應性較強，容易跟身體裡的蛋白質等分子發生不良反應", "乙醛完全沒有任何反應性", "乙醛本身就是最終解毒產物不需要再代謝"], "answer": 1, "explain": "乙醛帶有醛類典型的缺電子羰基結構，反應性比已經完全氧化、相對穩定的乙酸強很多，這個較強的反應性讓乙醛容易跟體內的蛋白質或其他分子發生不必要的反應，造成細胞損傷，這也是身體需要趕快把乙醛進一步氧化成乙酸來降低毒性的原因。"}, {"num": 17, "q": "葡萄糖開鏈醛糖形式跟環狀半縮醛形式之間，存在什麼樣的化學關係？", "options": ["兩者完全無關，是兩種不同的分子", "兩者處於動態平衡，環狀半縮醛是分子內OH攻擊自身醛基形成的", "葡萄糖永遠只以開鏈形式存在", "環狀形式只在實驗室裡才會出現"], "answer": 1, "explain": "葡萄糖分子內部的某個OH基，可以親核攻擊同一分子上的醛基，形成環狀的半縮醛結構，這兩種形式(開鏈跟環狀)在水溶液中處於動態平衡，但因為環狀形式更穩定，絕大部分時間葡萄糖會以環狀半縮醛形式存在。"}, {"num": 18, "q": "為什麼環狀半縮醛結構對葡萄糖能安全存在於血液中很重要？", "options": ["環狀結構讓葡萄糖完全失去任何反應性跟血液裡的物質互動", "環狀結構比開鏈醛基形式更穩定，降低跟蛋白質等物質發生不必要反應的機會", "跟結構穩定性完全無關的巧合", "環狀結構反而讓葡萄糖更容易跟蛋白質反應"], "answer": 1, "explain": "環狀半縮醛結構讓葡萄糖原本暴露在外、反應性較強的醛基『隱藏』起來，整體分子變得更穩定，這降低了葡萄糖在正常血糖濃度下跟血液裡蛋白質發生不必要反應(糖化反應)的機會，但即使如此，長期高血糖時這個風險還是會緩慢累積，造成糖尿病相關的併發症。"}, {"num": 19, "q": "脂肪酶(lipase)在消化系統裡催化什麼類型的反應？", "options": ["醇的氧化反應", "三酸甘油酯(一種酯)的水解反應", "DNA複製反應", "蛋白質合成反應"], "answer": 1, "explain": "脂肪酶是消化系統裡專門催化三酸甘油酯水解反應的酵素，它幫助把吃進來的油脂(屬於酯類結構)拆解成游離脂肪酸跟甘油，這兩個較小的分子才能被腸道細胞有效吸收進入血液循環。"}, {"num": 20, "q": "如果一個分子同時是一級醇又準備接觸強氧化劑，最終的氧化終點產物是什麼？", "options": ["停在醛這一步", "繼續氧化到羧酸這一步", "變成酮", "完全不會被氧化"], "answer": 1, "explain": "一級醇在強氧化劑(能提供足夠氧化力完成兩步氧化)的環境下，會先氧化成醛，醛上還有氫可以繼續被拔走，最終會氧化到羧酸這一步才會停止，因為羧酸碳上已經沒有額外的氫可以再被拔除進行下一步氧化。"}, {"num": 21, "q": "如果只想讓一級醇氧化停在醛這一步，不繼續氧化成羧酸，反應上需要注意什麼？", "options": ["完全不需要任何特殊條件，氧化反應永遠只會停在醛", "需要使用較溫和或特殊設計的氧化劑跟條件，控制反應不過度氧化到羧酸", "這種情況在化學上完全不可能達成", "只要使用普通氧化劑就能精準停在醛"], "answer": 1, "explain": "在實驗室或工業合成上，如果想讓一級醇精準氧化停留在醛這一步(避免繼續氧化成羧酸)，通常需要選用較溫和或經過特殊設計的氧化劑跟反應條件，因為強氧化劑或長時間反應很容易讓醛繼續被氧化下去，這是有機合成裡控制反應選擇性的重要技巧。"}, {"num": 22, "q": "半縮醛結構裡，羰基碳上同時接著哪兩種基團？", "options": ["兩個氫", "OH跟OR(來自醇的烷氧基)", "兩個碳鏈", "氮跟氧"], "answer": 1, "explain": "半縮醛是醇分子第一次攻擊羰基碳形成的產物，這個碳上同時接著一個OH(從原本的羰基氧轉變而來)跟一個OR烷氧基(從攻擊的醇分子而來)，這個特殊的雙官能基組合是半縮醛結構的標誌特徵。"}, {"num": 23, "q": "為什麼說縮醛是半縮醛的『進階版』？", "options": ["縮醛比半縮醛更簡單", "縮醛是半縮醛再經過一次醇攻擊、取代掉OH後形成的，需要兩個醇分子參與", "縮醛跟半縮醛完全是兩種無關的結構", "縮醛形成不需要任何醇分子"], "answer": 1, "explain": "縮醛的形成需要兩個醇分子依序參與：第一個醇攻擊形成半縮醛(羰基碳接OH跟OR)，第二個醇再進一步取代掉半縮醛上的OH(在酸催化下)，最終形成羰基碳同時接著兩個OR基團的縮醛結構，這也是為什麼縮醛形成通常需要過量的醇跟酸催化劑。"}, {"num": 24, "q": "類固醇藥物的代謝過程中，如果涉及醇基的氧化，遵循的化學規律跟前面提到的醇氧化規則有什麼關係？", "options": ["完全是另外一套全新規則跟一般醇氧化無關", "一樣遵循一級二級三級醇氧化的相同基本規律", "類固醇結構完全不含醇基不需要考慮氧化", "跟氧化反應規律完全脫鉤"], "answer": 1, "explain": "即使是結構複雜的類固醇藥物，當它們的代謝路徑涉及醇基的氧化反應時，依然遵循一般醇類氧化的基本規律(一級醇能氧化到羧酸、二級醇停在酮、三級醇不能氧化)，理解這個基礎規則，能幫助推測複雜藥物分子在體內可能經歷的代謝轉化路徑。"}, {"num": 25, "q": "反應地圖裡，醇、醛酮、羧酸、酯這四個官能基家族的反應，有沒有共通的核心邏輯？", "options": ["完全沒有任何共通邏輯，四者各自獨立毫無關聯", "都圍繞著『電子密度不均勻的位置』(OH氫、羰基碳、酸性OH)發生反應，呼應電子流的核心原則", "只有醇跟醛酮有共通邏輯，羧酸跟酯完全無關", "四者的反應邏輯完全相同沒有任何差異"], "answer": 1, "explain": "雖然醇、醛酮、羧酸、酯各自有特定的反應類型，但底層邏輯都圍繞著官能基地圖提到的『電子密度不均勻位置』：醇的酸性OH氫(因為氧搶電子)、醛酮的缺電子羰基碳(因為氧搶雙鍵電子)、羧酸結合兩者特性、酯則是羧酸OH被取代後仍保留羰基反應性，這些反應的發生都呼應了『電子從多的地方流向少的地方』這個整套電子流導航的核心原則，而不是各自孤立存在的規則。"}, {"num": 26, "q": "酸性水解酯時，水分子在反應中扮演什麼角色？", "options": ["親電者攻擊離去的醇基", "親核者攻擊酯的羰基碳，啟動水解", "完全不參與反應的旁觀者", "只在反應結束後才出現"], "answer": 1, "explain": "酯水解反應中，水分子的氧上孤對電子會以親核者的身份攻擊酯羰基上電子不足的碳，這個攻擊步驟啟動了整個水解機轉，後續經過一系列質子轉移跟鍵的重組，最終把酯拆解成羧酸(或在鹼性條件下是羧酸根)跟醇。"}, {"num": 27, "q": "為什麼NSAIDs類消炎藥常設計成帶有羧酸基的結構？", "options": ["跟藥效完全無關純粹是巧合", "羧酸基的酸性OH能跟標靶酵素活性位置形成氫鍵交互作用，幫助藥物穩定結合", "羧酸基只是為了讓藥物有酸味", "羧酸基會讓藥物完全失去活性"], "answer": 1, "explain": "許多NSAIDs類消炎止痛藥的設計利用了羧酸基的化學特性：羧酸的酸性OH能跟標靶酵素(像環氧化酶)活性位置上特定的胺基酸殘基形成氫鍵交互作用，這個交互作用幫助藥物分子穩定地結合在酵素的活性位置上，進而發揮抑制酵素活性、達到消炎止痛效果的藥理作用。"}, {"num": 28, "q": "如果一個分子上同時有醇基跟羧酸基，這兩個官能基有沒有可能在分子內部互相發生酯化反應？", "options": ["完全不可能發生分子內反應", "有可能，如果空間位置適合，可以形成分子內酯(內酯)", "只有分子間反應才會發生，分子內絕對不會", "跟空間位置完全無關"], "answer": 1, "explain": "如果一個分子上的羧酸基跟醇基的空間位置適合(距離跟角度允許形成穩定的環狀結構)，確實有可能發生分子內的酯化反應，形成所謂的『內酯』結構，這跟葡萄糖分子內OH攻擊自身醛基形成環狀半縮醛是類似的『分子自己跟自己反應』的概念延伸。"}, {"num": 29, "q": "為什麼說羧酸的反應地圖『同時涉及拔氫(酸性)跟換OH(取代)』兩種不同層次的反應？", "options": ["這兩種反應其實完全相同沒有區別", "拔氫只涉及酸性OH的氫離子離開，換OH則涉及整個OH基被取代換成別的結構，是兩個不同深度的化學變化", "羧酸只能進行拔氫反應不能進行換OH反應", "羧酸只能進行換OH反應不能進行拔氫反應"], "answer": 1, "explain": "羧酸跟鹼反應(拔氫)只是讓酸性的OH氫離開、形成帶負電的羧酸根，整個OH基的氧原子結構仍然保留在分子上；而羧酸跟醇形成酯(換OH)則是把整個OH基替換成另一個碳氧結構，這是更深層次的結構改變，理解這兩種反應發生在『不同深度』上，有助於釐清羧酸看似多樣的反應其實對應到不同的化學機轉層次。"}, {"num": 30, "q": "從反應地圖的角度看，為什麼說人體消化系統其實是在『執行』有機化學課本裡教的反應？", "options": ["跟有機化學完全無關，人體消化是獨立於化學原理的神秘過程", "消化酵素本質上是催化特定有機反應(像酯水解、醯胺鍵水解)的生物催化劑，反應原理跟化學課本一致", "人體消化系統使用的是跟有機化學完全不同的另一套規則", "消化反應跟電子流概念毫無關聯"], "answer": 1, "explain": "人體消化系統裡的各種酵素(像脂肪酶水解三酸甘油酯、蛋白酶水解蛋白質的醯胺鍵)，本質上都是在催化特定類型的有機化學反應，這些反應遵循的電子流跟官能基反應性原理，跟實驗室裡發生的化學反應是同一套規則，只是身體用精密設計的酵素大幅加快了反應速度並提高了反應的選擇性跟特異性。"}, {"num": 31, "q": "Aspirin結構裡的酯鍵在體內被水解後，釐放出什麼有活性的物質？", "options": ["葡萄糖", "柳酸(具有活性的消炎止痛成分)", "胺基酸", "甘油"], "answer": 1, "explain": "Aspirin(乙醯柳酸)的結構含有一個酯鍵，這個酯鍵在體內會被酵素催化水解，釐放出有藥理活性的柳酸，這個『先以較穩定的酯形式吃進去，再在體內水解釐放活性成分』的設計策略，是許多前驅藥物(prodrug)共通使用的化學手法。"}, {"num": 32, "q": "為什麼前驅藥物(prodrug)的設計常常利用酯鍵這種結構？", "options": ["因為酯鍵完全無法被人體代謝", "因為酯鍵相對穩定可以先以無活性或低活性形式存在，進入體內後再被酵素水解釐放出活性成分", "因為酯鍵會讓藥物立刻失去任何效果", "跟酯鍵的化學特性完全無關，純粹隨機選擇"], "answer": 1, "explain": "酯鍵在設計前驅藥物上很有用，是因為它相對穩定(在到達目標部位前不會輕易分解)，但又能被人體內普遍存在的酵素(像各種酯酶)有效水解，這個『穩定運送、特定時機釐放』的特性，讓酯鍵成為前驅藥物設計裡常用的化學連接方式，能幫助改善藥物的吸收、分布或降低副作用。"}, {"num": 33, "q": "如果一個藥物分子裡的酯鍵被設計成在腸道環境特別容易水解，這在臨床應用上有什麼意義？", "options": ["完全沒有任何臨床意義", "可能設計成讓藥物在腸道局部釐放活性成分，減少全身性的副作用暴露", "這種設計會讓藥物完全失效", "跟藥物釋放的部位完全無關"], "answer": 1, "explain": "透過調整酯鍵周圍的化學結構(影響水解的難易程度跟發生部位)，藥物設計師有時能讓酯鍵特別容易在腸道局部環境被水解釐放出活性成分，這種『局部釐放』的設計策略有助於讓藥效集中在需要作用的部位，同時可能減少藥物被全身吸收後對其他器官造成的不必要副作用。"}, {"num": 34, "q": "為什麼理解反應地圖的『電子流邏輯』，比單純記住每個官能基對應的反應式更有用？", "options": ["因為反應式比電子流邏輯更重要更準確", "因為理解電子流邏輯後，面對新藥物或新分子結構時，能推測它可能發生的代謝或反應途徑，而不需要每次都查表死記", "記住反應式永遠是唯一有效的學習方法", "兩種學習方式效果完全相同沒有差別"], "answer": 1, "explain": "藥物研發或臨床藥理學裡會不斷出現新的分子結構，如果只是死記每一個已知官能基對應的反應式，遇到全新的藥物結構時很難類推預測它可能的代謝路徑或反應性；但如果理解了背後『電子密度不均勻處引發反應』的核心邏輯，就能對任何新結構進行合理的推測分析，這正是反應地圖想培養的長期可遷移能力。"}, {"num": 35, "q": "總結醇、醛酮、羧酸、酯四個反應地圖，它們之間有沒有相互轉換的可能性？", "options": ["完全沒有任何轉換的可能性，四者永遠獨立存在", "有，醇能氧化成醛酮再到羧酸，羧酸能跟醇反應形成酯，酯能水解回羧酸跟醇，形成一個相互連結的轉換網絡", "只有醇能變成醛酮，其他官能基之間完全無法轉換", "酯只能形成不能被拆解回原本的羧酸跟醇"], "answer": 1, "explain": "這四個官能基家族之間確實存在豐富的相互轉換可能性：醇可以氧化變成醛酮(再到羧酸)，羧酸可以跟醇反應形成酯，酯又能水解拆解回羧酸跟醇，這些轉換路徑彼此串接形成一個完整的反應網絡，理解這個網絡的連結關係，比把四個官能基的反應當成四個獨立孤立的知識點來記憶，更能建立起整體性的有機化學概念架構。"}, {"num": 36, "q": "總結來說，反應地圖想傳達的核心概念是什麼？", "options": ["每個官能基的反應都要單獨死記沒有共通邏輯", "反應地圖把電子流的抽象原理套用到真實官能基家族上，幫助理解為什麼這些反應會發生，而不只是記住反應式長什麼樣子", "反應地圖跟電子流導航完全是兩個獨立無關的概念", "碳鏈長度才是決定反應地圖內容的關鍵因素"], "answer": 1, "explain": "反應地圖的核心概念是把電子流導航裡『電子從多的地方流向少的地方』這個抽象原理，套用到醇、醛酮、羧酸、酯這些具體的官能基家族上，讓學習者看懂『為什麼』這些反應會以這樣的方式發生(像為什麼醇氧化會有三個層次的差異、為什麼羧酸的反應同時涉及拔氫跟換OH)，而不只是表面地記住一條一條看似互相無關的反應式，這種理解層次的提升，正是整個OrgChemMap想帶給學習者最重要的價值。"}]}, {"id": "medical", "zh": "醫學連結地圖", "icon": "🩺", "color": "#be123c", "essence_zh": "醫學連結地圖是整張OrgChemMap的「臨床應用展示間」——胺基酸、葡萄糖、脂肪酸、藥物結構，每一個生命運作或臨床治療的背後，都是前面四張地圖裡某個官能基跟電子流規律在分子上的具體演出。", "nodes": [{"id": "amino_acid", "zh": "胺基酸", "essence_zh": "胺基酸同時帶有羧酸基(酸性)跟胺基(鹼性)，這個雙重身份讓它在不同的酸鹼環境下能呈現不同的電荷狀態，這個特性叫兩性電解質", "functional_group_link_zh": "對應官能基：羧酸基(酸性OH氫)跟胺基(氮上的孤對電子)。在生理pH下，羧酸基容易放出氫變成帶負電的羧酸根，胺基容易接受氫變成帶正電的銨根，整個胺基酸分子同時帶正負電(零淨電荷)，這個狀態叫雙性離子", "trick_zh": "記「胺基酸在中性環境下是雙性離子，同時帶正電跟負電，淨電荷剛好抵消」，這個特性是理解蛋白質電泳跟等電點概念的基礎", "mindmap_zh": ["羧酸基帶酸性", "胺基帶鹼性孤對電子", "生理pH下形成雙性離子", "羧酸基跟胺基反應形成肽鍵", "胺基酸串接形成蛋白質"], "clinical_application_zh": "蛋白質電泳分離技術正是利用不同胺基酸組成的蛋白質在特定pH下帶有不同的淨電荷，在電場中移動速度因此不同，這個分離技術廣泛應用在臨床檢驗跟分子生物學研究"}, {"id": "glucose", "zh": "葡萄糖", "essence_zh": "葡萄糖開鏈狀態帶有一個醛基，但在水溶液中絕大部分時間會自動跟分子內某個OH基反應形成環狀的半縮醛結構，這個環狀結構是葡萄糖在血液中主要存在的形式", "functional_group_link_zh": "對應官能基：醛基(羰基碳缺電子)跟多個OH基(醇類)。分子內的OH親核攻擊醛基的缺電子碳，形成環狀半縮醛，這正是醛酮反應地圖裡「親核者攻擊羰基」這個規律在葡萄糖分子內部自我發生的展現", "trick_zh": "記「葡萄糖環狀結構是分子自己跟自己反應形成的(分子內半縮醛)」，不是外部加進去的物質造成的", "mindmap_zh": ["開鏈狀態帶醛基", "多個OH基提供親核者", "分子內OH攻擊醛基", "形成環狀半縮醛結構", "環狀形式是血液中主要存在型態"], "clinical_application_zh": "長期高血糖時，葡萄糖的醛基(或開鏈微量存在的形式)會緩慢跟蛋白質上的胺基發生反應(糖化反應)，形成糖化終產物，這是糖尿病造成血管跟神經慢性損傷的重要化學機轉，糖化血色素(HbA1c)的檢測正是利用這個反應原理"}, {"id": "fatty_acid", "zh": "脂肪酸", "essence_zh": "脂肪酸是一條長碳鏈接著一個羧酸基，依碳鏈上有沒有雙鍵分成飽和脂肪酸(全部單鍵)跟不飽和脂肪酸(帶有雙鍵)，雙鍵的存在跟位置直接影響脂肪酸的物理性質跟生理功能", "functional_group_link_zh": "對應官能基：羧酸基(分子的「頭部」，親水)跟長碳鏈(分子的「尾巴」，疏水)，如果碳鏈中帶有雙鍵(烯類官能基)，這個雙鍵會讓碳鏈產生彎曲，無法跟其他脂肪酸鏈緊密平行排列", "trick_zh": "記「雙鍵讓碳鏈彎曲，彎曲讓脂肪沒辦法緊密堆疊，這就是為什麼含雙鍵的不飽和油脂在室溫下是液態，飽和油脂是固態」", "mindmap_zh": ["羧酸頭部親水疏水尾巴", "飽和脂肪酸全部單鍵筆直", "不飽和脂肪酸有雙鍵彎曲", "彎曲結構讓堆疊鬆散", "堆疊鬆散決定室溫下的物理狀態"], "clinical_application_zh": "細胞膜上的磷脂質尾端使用不飽和脂肪酸，雙鍵造成的彎曲結構讓脂肪酸鏈無法緊密排列，這個鬆散排列正是細胞膜能在體溫下維持適當流動性(不會凝固變硬)的關鍵分子基礎"}, {"id": "drug_structure", "zh": "藥物結構", "essence_zh": "藥物分子上的官能基決定了它跟身體內標靶分子(像受體、酵素)之間怎麼產生交互作用，理解官能基的電子流特性，能幫助理解為什麼這個藥物結構能產生特定的藥理效果", "functional_group_link_zh": "對應官能基：依藥物設計目的不同，可能利用羧酸基(像NSAIDs類消炎藥常帶羧酸基幫助跟酵素活性位置產生氫鍵交互作用)、胺基(像許多神經傳導物質類似物利用胺基的鹼性去跟受體結合)、或特殊設計的親電結構(像某些抗癌藥物刻意設計成親電基去攻擊DNA)", "trick_zh": "記「看到藥物結構先找官能基，官能基的電子流特性常常直接對應到藥物的作用機轉」", "mindmap_zh": ["官能基決定藥物跟標靶的交互作用", "羧酸基常助於氫鍵結合", "胺基常模擬天然鹼性訊號分子", "親電結構可設計成抗癌烷化劑", "結構微調可大幅改變藥效跟副作用"], "clinical_application_zh": "Aspirin(乙醯柳酸)結構上是一個酯鍵跟一個羧酸基的組合，這個酯鍵在體內會被酵素水解(呼應前面酯的反應地圖)釋放出有活性的柳酸，這個水解釐放的設計正是許多前驅藥物(prodrug)的核心化學策略"}], "quiz": [{"num": 1, "q": "胺基酸同時帶有哪兩種官能基？", "options": ["醇基跟醚基", "羧酸基跟胺基", "醛基跟酮基", "酯基跟胺基"], "answer": 1, "explain": "胺基酸的結構同時帶有羧酸基(酸性)跟胺基(鹼性)，這個雙重身份是它在不同酸鹼環境下能呈現不同電荷狀態的根本原因，也是它能跟其他胺基酸形成肽鍵連接成蛋白質的化學基礎。"}, {"num": 2, "q": "胺基酸在生理pH環境下會形成什麼樣的電荷狀態？", "options": ["完全不帶電", "只帶正電", "雙性離子(同時帶正負電，淨電荷為零)", "只帶負電"], "answer": 2, "explain": "胺基酸的羧酸基在生理pH下容易放出氫變成帶負電的羧酸根，胺基則容易接受氫變成帶正電的銨根，整個分子同時帶正負電，淨電荷剛好抵消為零，這個特殊狀態叫雙性離子。"}, {"num": 3, "q": "胺基酸之間透過什麼反應連接形成蛋白質？", "options": ["氧化反應", "羧酸基跟胺基反應形成肽鍵(一種醯胺鍵)", "加成反應", "完全沒有特定的化學反應"], "answer": 1, "explain": "一個胺基酸的羧酸基跟另一個胺基酸的胺基發生脱水縮合反應，形成肽鍵(一種醯胺鍵)，這個反應一個個重複進行，把多個胺基酸串接起來就形成了蛋白質這個生物大分子。"}, {"num": 4, "q": "葡萄糖開鏈狀態時帶有哪個官能基？", "options": ["羧酸基", "醛基(因此屬於醛糖)", "酯基", "胺基"], "answer": 1, "explain": "葡萄糖在開鏈狀態時帶有一個醛基，因此被歸類為醛糖，這個醛基的化學特性(包括還原性)是葡萄糖各種生理跟臨床檢測反應的化學基礎。"}, {"num": 5, "q": "葡萄糖在水溶液中主要以什麼形式存在？", "options": ["永遠以開鏈醛糖形式存在", "主要以環狀半縮醛形式存在", "以氣態形式存在", "跟醛基完全無關的另一種結構"], "answer": 1, "explain": "葡萄糖分子內部的某個OH基會親核攻擊同一分子上的醛基，形成環狀的半縮醛結構，這個環狀形式比開鏈形式更穩定，所以在水溶液中絕大部分時間葡萄糖會以這個環狀半縮醛形式存在。"}, {"num": 6, "q": "葡萄糖環狀結構的形成，是哪一種類型的化學反應？", "options": ["分子間的加成反應", "分子內部自己跟自己反應(分子內半縮醛形成)", "跟其他分子的取代反應", "完全不涉及任何反應"], "answer": 1, "explain": "葡萄糖的環狀結構是分子自己內部的OH基攻擊自己的醛基所形成的，這是一種『分子內』反應(不需要外部其他分子參與)，這個自我反應的能力來自葡萄糖分子上同時具備醛基跟多個OH基這兩種官能基。"}, {"num": 7, "q": "糖化血色素(HbA1c)檢測背後的化學反應原理是什麼？", "options": ["跟葡萄糖完全無關的另一種反應", "長期高血糖時葡萄糖緩慢跟血色素蛋白質上的胺基發生糖化反應", "跟蛋白質完全無關的純化學反應", "純粹是物理現象跟化學反應無關"], "answer": 1, "explain": "長期高血糖環境下，葡萄糖(微量存在的開鏈醛基形式)會緩慢跟血色素蛋白質上的胺基發生糖化反應，形成糖化終產物，這個反應的累積比例能反映過去2到3個月的平均血糖水平，是HbA1c檢測作為長期血糖控制指標的化學基礎。"}, {"num": 8, "q": "糖化終產物的形成，對血管跟神經組織的長期影響是什麼？", "options": ["完全沒有任何不良影響", "長期累積會造成蛋白質結構跟功能異常，是糖尿病慢性併發症的重要化學機轉", "只會影響皮膚顏色沒有其他影響", "會讓血管變得更健康"], "answer": 1, "explain": "糖化終產物的長期累積會改變身體裡多種蛋白質的結構跟正常功能，這個過程被認為是糖尿病造成血管(像視網膜病變、腎病變)跟神經(周邊神經病變)慢性損傷的重要化學機轉之一，也是長期良好血糖控制對預防併發症如此重要的化學原因。"}, {"num": 9, "q": "脂肪酸的基本結構是什麼？", "options": ["環狀結構接著胺基", "一條長碳鏈接著一個羧酸基", "純碳氫鏈完全沒有任何官能基", "多個OH基組成的結構"], "answer": 1, "explain": "脂肪酸的結構是一條長碳鏈(疏水的『尾巴』)接著一個羧酸基(親水的『頭部』)，這個一端親水一端疏水的特性，讓脂肪酸在水中容易聚集形成特定的結構(像細胞膜的雙層脂質結構)。"}, {"num": 10, "q": "飽和脂肪酸跟不飽和脂肪酸的結構差異在哪裡？", "options": ["飽和脂肪酸碳鏈比較短", "不飽和脂肪酸的碳鏈上帶有雙鍵，飽和脂肪酸全部是單鍵", "兩者完全沒有結構上的差異", "飽和脂肪酸帶有更多官能基"], "answer": 1, "explain": "飽和脂肪酸的碳鏈上全部都是單鍵(已經『飽和』，沒有再多接氫的空間)；不飽和脂肪酸的碳鏈上則帶有一個或多個雙鍵，這個雙鍵的存在讓碳鏈產生彎曲，直接影響脂肪酸的物理性質。"}, {"num": 11, "q": "為什麼不飽和脂肪酸在室溫下通常呈液態，而飽和脂肪酸通常呈固態？", "options": ["跟脂肪酸結構完全無關純粹是巧合", "雙鍵造成碳鏈彎曲，無法緊密堆疊排列，而飽和脂肪酸碳鏈筆直能緊密堆疊", "不飽和脂肪酸分子量比較輕所以是液態", "飽和脂肪酸分子量比較輕所以是固態"], "answer": 1, "explain": "不飽和脂肪酸的雙鍵讓碳鏈產生彎曲，這個彎曲的形狀讓不同脂肪酸鏈之間沒辦法緊密平行堆疊排列，分子間作用力較弱，所以在室溫下通常呈液態；飽和脂肪酸碳鏈筆直，能緊密堆疊形成較強的分子間作用力，所以室溫下通常呈固態。"}, {"num": 12, "q": "細胞膜為什麼需要使用不飽和脂肪酸，而不是只用飽和脂肪酸構成？", "options": ["不飽和脂肪酸比較容易取得", "雙鍵造成的彎曲結構讓細胞膜在體溫下維持適當的流動性，不會凝固變硬", "跟細胞膜的流動性完全無關", "飽和脂肪酸無法構成任何生物膜結構"], "answer": 1, "explain": "細胞膜磷脂質的脂肪酸尾端如果全部使用飽和脂肪酸，膜可能在體溫下變得太緊密太僵硬；摻入帶雙鍵的不飽和脂肪酸，雙鍵造成的彎曲讓脂肪酸鏈無法緊密排列，這個鬆散結構正是細胞膜能維持適當流動性、支援正常物質運輸功能的關鍵分子基礎。"}, {"num": 13, "q": "人造氫化油的製程，本質上是對不飽和脂肪酸的雙鍵進行什麼反應？", "options": ["氧化反應把雙鍵變成羧酸", "氫加成反應把雙鍵打開變成單鍵", "消除反應產生更多雙鍵", "跟雙鍵完全無關的另一種反應"], "answer": 1, "explain": "人造氫化油是把氫氣加成到不飽和脂肪酸的雙鍵上，讓雙鍵打開變成單鍵(這個過程是氫加成反應，呼應前面電子流導航裡加成反應的概念)，原本液態的油因此變成固態(更接近飽和脂肪酸的物理性質)，但這個製程可能意外產生對心血管健康有害的反式脂肪結構。"}, {"num": 14, "q": "藥物分子上的官能基，主要決定了藥物的什麼特性？", "options": ["跟藥效完全無關，純粹是化學家的隨意設計", "決定了藥物跟身體內標靶分子(像受體、酵素)之間怎麼產生交互作用", "只決定藥物的顏色", "只決定藥物的價格"], "answer": 1, "explain": "藥物分子上的官能基(像羧酸基、胺基、特殊的親電結構)直接決定了這個分子能跟身體內哪些標靶分子(受體、酵素等)產生什麼樣的交互作用，理解官能基的電子流特性，能幫助理解為什麼這個藥物結構能產生特定的藥理效果。"}, {"num": 15, "q": "NSAIDs類消炎止痛藥常帶有羧酸基，這個羧酸基幫助藥物產生什麼類型的交互作用？", "options": ["跟標靶完全沒有交互作用", "跟酵素活性位置形成氫鍵交互作用，幫助藥物穩定結合", "只是為了增加藥物的酸味", "會讓藥物完全失去藥理活性"], "answer": 1, "explain": "NSAIDs類消炎止痛藥結構上常帶有羧酸基，這個羧酸基的酸性OH能跟標靶酵素活性位置上特定的胺基酸殘基形成氫鍵交互作用，這個交互作用幫助藥物分子穩定地結合在酵素的活性部位上，發揮抑制酵素活性的藥理作用。"}, {"num": 16, "q": "許多神經傳導物質類似物的藥物設計，常利用胺基的什麼特性去跟受體結合？", "options": ["胺基完全沒有任何反應性", "胺基的鹼性(氮上孤對電子能接受氫質子)能模擬天然神經傳導物質的結合特性", "胺基只能跟金屬離子反應", "胺基會讓藥物完全失去活性"], "answer": 1, "explain": "許多天然的神經傳導物質(像多巴胺、血清素)本身就帶有胺基結構，依靠胺基的鹼性特性(氮上的孤對電子)去跟神經受體上的特定位置結合，藥物設計師常利用這個結構特性，設計帶有胺基的藥物分子去模擬天然訊號分子，跟同樣的受體產生結合作用。"}, {"num": 17, "q": "某些抗癌藥物刻意設計成帶有親電結構，目的是攻擊什麼分子？", "options": ["攻擊細胞膜上的脂肪酸", "攻擊DNA上電子豐富的親核位置(像氮原子的孤對電子)", "攻擊水分子", "完全不攻擊任何特定分子，隨機作用"], "answer": 1, "explain": "某些抗癌藥物(像DNA烷化劑)的設計策略是刻意製造一個高度親電的結構，這個親電結構會主動攻擊DNA鹼基上電子豐富的親核位置(像氮原子的孤對電子)，造成DNA損傷，進而阻止快速分裂的癌細胞繼續複製，這是利用電子流導航裡親電攻擊原理設計抗癌藥物的具體應用。"}, {"num": 18, "q": "Aspirin結構裡含有什麼樣的化學連接，這個連接在體內會發生什麼變化？", "options": ["醚鍵，完全不會發生任何變化", "酯鍵，會在體內被酵素水解，釐放出有活性的柳酸", "胺基鍵，會直接被身體排出", "醛基連接，完全不會被代謝"], "answer": 1, "explain": "Aspirin(乙醯柳酸)的結構含有一個酯鍵，這個酯鍵在進入人體後，會被體內普遍存在的酵素(像各種酯酶)催化水解，釐放出具有消炎止痛活性的柳酸，這個『先以較穩定形式吃進去，再在體內水解釐放活性成分』正是典型的前驅藥物(prodrug)設計策略。"}, {"num": 19, "q": "為什麼藥物設計師常選擇用酯鍵來設計前驅藥物？", "options": ["因為酯鍵完全無法被任何酵素分解", "酯鍵相對穩定但能被人體普遍存在的酯酶有效水解，達到『穩定運送、特定時機釐放』的效果", "因為酯鍵會讓藥物立刻失效沒有任何作用", "跟酯鍵的化學特性完全無關，純屬巧合選擇"], "answer": 1, "explain": "酯鍵的特性是相對穩定(在到達目標部位前不會輕易自然分解)，但又能被人體內廣泛存在的酯酶有效水解釐放活性成分，這個『先穩定運送、再在特定時機或部位釐放』的特性，讓酯鍵成為前驅藥物設計裡常被選用的連接方式，有助於改善藥物的吸收、分布特性或減少不必要的副作用。"}, {"num": 20, "q": "甘油是哪一種官能基構成的分子？在細胞膜結構中扮演什麼角色？", "options": ["三個胺基的胺類，是蛋白質的組成部分", "三個OH基的醇類，是細胞膜磷脂質的骨架核心", "三個羧酸基的酸類，是DNA的組成部分", "三個醚橋的醚類，跟細胞膜結構完全無關"], "answer": 1, "explain": "甘油是帶有三個OH基的醇類分子(三元醇)，在細胞膜磷脂質的結構裡，甘油的三個OH基分別能跟脂肪酸形成酯鍵連接，組裝成完整的磷脂質分子，這正是細胞膜雙層脂質結構的骨架核心。"}, {"num": 21, "q": "蛋白質電泳分離技術，主要利用了蛋白質的什麼特性進行分離？", "options": ["蛋白質的顏色差異", "不同胺基酸組成的蛋白質在特定pH下帶有不同的淨電荷，在電場中移動速度因此不同", "蛋白質的重量差異跟電荷完全無關", "蛋白質永遠不帶任何電荷"], "answer": 1, "explain": "不同的蛋白質因為含有不同比例跟種類的胺基酸，在特定的pH環境下會帶有不同程度的淨電荷(因為胺基酸的羧酸基跟胺基在不同pH下的離子化程度不同)，這個電荷差異讓蛋白質在電場中的移動速度有所不同，蛋白質電泳技術正是利用這個原理達到分離跟分析蛋白質的目的。"}, {"num": 22, "q": "驗尿糖試紙的化學原理跟葡萄糖的哪個官能基特性最相關？", "options": ["跟官能基完全無關", "醛基的還原性，葡萄糖能把試紙上的特定化學物質還原進而呈色", "胺基的鹼性", "醚基的穩定性"], "answer": 1, "explain": "葡萄糖的醛基具有還原性，能把試紙上預先設計好的特定化學物質還原，這個還原反應會引發呈色變化，葡萄糖濃度越高，能發生反應的醛基數量越多，呈色反應也越明顯，這是傳統驗尿糖試紙設計的化學基礎原理。"}, {"num": 23, "q": "為什麼說「理解官能基的電子流特性，常常直接對應到藥物的作用機轉」？", "options": ["官能基跟藥物作用機轉完全是兩個無關的領域", "因為官能基決定了分子哪裡電子多哪裡電子少，這直接影響它能跟身體內哪些分子產生交互作用", "藥物的作用機轉完全不受任何化學結構影響", "這句話完全沒有任何科學依據"], "answer": 1, "explain": "藥物分子要在身體裡發揮作用，必須跟特定的標靶分子(受體、酵素等)產生有意義的交互作用，這個交互作用的本質往往就是電子流動的展現(像氫鍵、靜電吸引、親核或親電攻擊)，所以理解藥物結構上每個官能基的電子流特性，往往能直接幫助理解或預測這個藥物可能的作用機轉，而不只是死記某個藥物對應某個適應症。"}, {"num": 24, "q": "脂肪酸的羧酸基(親水頭部)在形成細胞膜結構時，會朝向哪個方向排列？", "options": ["朝向細胞膜的最中心(疏水核心)", "朝向水環境的一側(細胞膜的內外表面)", "完全隨機排列沒有固定方向", "會直接溶解消失不參與膜結構"], "answer": 1, "explain": "脂肪酸(或磷脂質)的親水頭部(包含羧酸基或磷酸基等親水結構)會朝向水環境的一側排列(像細胞膜的內外兩個表面，因為內外都是水性的環境)，而疏水的長碳鏈尾巴則會朝向膜的中心聚集，這個親水頭部朝外、疏水尾巴朝內的排列方式，正是細胞膜雙層脂質結構能夠穩定存在於水環境中的根本物理化學原理。"}, {"num": 25, "q": "為什麼長期高血糖環境，相較於正常血糖，會讓糖化終產物的形成速度明顯加快？", "options": ["跟血糖濃度完全無關，糖化反應速度永遠固定", "血糖濃度越高，葡萄糖分子(微量開鏈醛基形式)跟蛋白質胺基接觸跟反應的機會越多", "高血糖反而會減少糖化反應的發生", "糖化反應只在低血糖時才會發生"], "answer": 1, "explain": "糖化反應的發生機率跟葡萄糖分子(尤其是微量存在的開鏈醛基活性形式)能接觸到蛋白質胺基的機會多寡有關，血糖濃度越高，代表血液裡葡萄糖分子的整體濃度越高，跟周圍蛋白質分子發生糖化反應的統計機會自然也隨之增加，這就是為什麼長期高血糖會讓糖化終產物加速累積、造成各種慢性併發症的化學基礎。"}, {"num": 26, "q": "胺基酸的等電點(isoelectric point)概念，跟前面提到的雙性離子概念有什麼關係？", "options": ["完全無關的兩個獨立概念", "等電點正是讓胺基酸整體淨電荷恰好為零(雙性離子狀態最純粹展現)的特定pH值", "等電點跟電荷完全無關", "雙性離子只在極端pH下才會出現"], "answer": 1, "explain": "等電點是指某個特定的pH值，在這個pH下，胺基酸分子的整體淨電荷剛好等於零，這正是雙性離子狀態最純粹的展現(羧酸根的負電荷跟銨根的正電荷剛好完全抵消)，理解等電點概念，能幫助預測蛋白質在不同pH環境下的溶解度跟電泳行為，這在生物化學跟蛋白質純化技術上有重要的實際應用。"}, {"num": 27, "q": "為什麼三酸甘油酯(油脂)在化學分類上屬於酯類而不是單純的脂肪酸？", "options": ["因為它完全不含任何脂肪酸成分", "因為它是甘油(醇)跟三個脂肪酸(羧酸)透過酯鍵連接形成的完整結構", "因為它跟酯類完全無關純粹分類錯誤", "三酸甘油酯跟脂肪酸是完全相同的物質沒有差異"], "answer": 1, "explain": "三酸甘油酯的完整結構是甘油(一種三元醇)透過三個酯鍵分別連接三個脂肪酸分子所組成的，這個整體結構正是典型的酯類分子(羧酸+醇脱水縮合形成)，跟單獨游離存在的脂肪酸(只是羧酸+長碳鏈)是不同層次的分子，水解三酸甘油酯後才能把它拆解回原本的甘油跟游離脂肪酸。"}, {"num": 28, "q": "為什麼血糖控制不良的糖尿病患者，容易出現視網膜、腎臟、神經的慢性病變？", "options": ["跟血糖完全無關，純粹是基因決定", "長期高血糖加速糖化終產物在這些器官的微血管跟蛋白質結構上累積，造成結構跟功能損傷", "這些病變只跟血壓有關跟血糖無關", "這些病變完全無法用任何化學機轉解釋"], "answer": 1, "explain": "視網膜、腎臟、神經這些器官的微血管特別密集，且部分組織的蛋白質更新速度較慢，長期高血糖環境下，糖化終產物容易在這些微血管壁跟周邊蛋白質結構上持續累積，這個累積會逐漸改變蛋白質的正常結構跟功能，是糖尿病造成這些器官慢性病變的重要化學機轉之一，這也是臨床上強調嚴格血糖控制能預防併發症的化學基礎。"}, {"num": 29, "q": "為什麼有些藥物分子需要同時考慮『親水部分』跟『疏水部分』的平衡設計？", "options": ["跟藥物吸收完全無關的隨意設計考量", "親水疏水的平衡會直接影響藥物能否順利穿透細胞膜、被身體吸收跟分布", "藥物分子永遠不需要考慮這個平衡", "只有脂肪酸才需要考慮親水疏水平衡，藥物完全不需要"], "answer": 1, "explain": "細胞膜是由磷脂質構成的疏水屏障(中心疏水、表面親水)，藥物分子要能穿透細胞膜被身體吸收，往往需要同時具備一定的疏水性(才能穿過膜的疏水核心)跟適度的親水性(才能溶於體液中被運輸)，這個親水疏水平衡的設計考量，跟脂肪酸分子親水頭部疏水尾巴的概念有類似的化學邏輯，是藥物設計裡『藥物動力學』考量的重要基礎。"}, {"num": 30, "q": "為什麼說「藥物結構地圖」是醫學連結地圖裡最能整合前面所有官能基知識的一個節點？", "options": ["因為藥物結構跟官能基完全無關", "因為幾乎所有官能基(羧酸、胺基、酯、親電結構等)都可能出現在不同藥物的設計中，整合了前面所有的知識點", "因為藥物結構地圖完全獨立不需要任何官能基知識", "因為藥物只會用到醚基不會用到其他官能基"], "answer": 1, "explain": "藥物分子的設計往往會綜合利用各種官能基的特性(像用羧酸基形成氫鍵、用胺基模擬神經傳導物質、用酯鍵設計前驅藥物、用親電結構設計抗癌藥物)，所以理解藥物結構地圖，本質上是把前面官能基地圖、電子流導航、反應地圖學到的所有知識點，綜合應用到一個個具體真實的臨床藥物案例上，這也是醫學連結地圖的設計核心精神。"}, {"num": 31, "q": "為什麼脂肪酸的分類(飽和、不飽和)在臨床營養學上也很重要？", "options": ["跟臨床營養完全無關純粹是化學課題", "不同類型脂肪酸對心血管健康的影響不同，這跟前面提到的雙鍵結構特性直接相關", "所有脂肪酸對健康的影響完全相同", "飽和跟不飽和脂肪酸的化學性質完全一樣"], "answer": 1, "explain": "飽和脂肪酸(攝取過多可能跟某些心血管風險因子有關)跟不飽和脂肪酸(部分被認為對心血管健康相對有益)，在臨床營養學上有不同的健康建議，這個差異的化學基礎正是雙鍵存在與否(影響脂肪酸的物理化學性質)，這說明了有機化學的基礎概念(雙鍵、官能基)如何延伸應用到臨床營養跟公共衛生建議上。"}, {"num": 32, "q": "反式脂肪(在氫化油製程中可能意外產生)的結構特徵，跟一般天然不飽和脂肪酸的雙鍵結構有什麼不同？", "options": ["完全沒有任何結構上的差異", "雙鍵兩側氫原子的空間排列方式不同(反式排列)，這個微小差異會改變脂肪酸鏈的整體形狀", "反式脂肪完全不含任何雙鍵結構", "反式脂肪跟飽和脂肪酸的結構完全相同"], "answer": 1, "explain": "天然存在的不飽和脂肪酸雙鍵通常是『順式』排列(雙鍵兩側的氫在同一側，造成鏈的彎曲)，而氫化油製程中可能意外產生『反式』排列(雙鍵兩側的氫在相對的兩側)的脂肪酸，這個立體結構上的微小差異，會讓反式脂肪酸鏈的形狀變得比較接近飽和脂肪酸(較直)，這個結構特性的改變被認為跟反式脂肪對心血管健康的不良影響有關。"}, {"num": 33, "q": "如果一個藥物分子的結構裡完全沒有任何官能基(只是純粹的碳氫鏈)，這對藥物的反應性會有什麼影響？", "options": ["完全不會有任何影響，反應性跟官能基無關", "純碳氫鏈缺少電子密度不均勻的位置，整體反應性會非常低，難以跟其他生物分子產生有意義的交互作用", "純碳氫鏈反而會比有官能基的分子更容易反應", "這種情況在藥物設計裡完全不會出現"], "answer": 1, "explain": "純粹的碳氫鏈(像簡單的烷類結構)因為缺少官能基所代表的『電子密度不均勻位置』，整體化學反應性會非常低，這樣的結構通常難以跟身體內的受體、酵素等生物分子產生有意義的特異性交互作用，這也是為什麼絕大多數有藥理活性的藥物分子，結構上都會包含至少一個以上具有特定電子流特性的官能基，用來跟標靶分子產生專一的結合跟作用。"}, {"num": 34, "q": "從醫學連結地圖的角度看，為什麼說「生命運作的本質，很大一部分就是官能基跟電子流規律在分子層級的具體展現」？", "options": ["這句話完全沒有任何科學根據", "因為從胺基酸的雙性離子、葡萄糖的環狀半縮醛、到脂肪酸的膜結構、藥物的標靶結合，每一個生理現象背後都對應著具體的官能基化學原理", "生命運作跟有機化學完全是兩個獨立不相關的領域", "只有藥物才跟有機化學有關，其他生理現象都跟化學無關"], "answer": 1, "explain": "從這份醫學連結地圖涵蓋的四個節點可以看到一個一致的模式：胺基酸的雙性電荷狀態源自羧酸跟胺基的化學特性，葡萄糖的環狀穩定結構源自分子內半縮醛反應，脂肪酸構成的細胞膜流動性源自雙鍵造成的彎曲結構，藥物的標靶結合作用源自官能基的電子流特性——這些看似分散的生理跟臨床現象，背後都能用同一套官能基跟電子流的化學原理來理解，這正是OrgChemMap想傳達『理解規律而非死記反應』這個核心理念，在真實生命科學跟醫學應用上最具體的展現。"}, {"num": 35, "q": "如果未來遇到一個從未學過的新藥物結構，運用醫學連結地圖教的思考方式，第一步應該怎麼分析？", "options": ["直接放棄，因為沒學過就無法分析", "先找出分子上的官能基，分析每個官能基的電子流特性，推測它可能跟身體內哪些分子產生交互作用", "隨機猜測藥效，不需要任何系統性分析", "只看分子的整體顏色就能判斷藥效"], "answer": 1, "explain": "面對任何全新的、課本沒有直接教過的藥物或有機分子結構，依照整套OrgChemMap的訓練思路，第一步應該是系統性地找出分子上存在的所有官能基(羧酸、胺基、酯、醚、雙鍵等)，再依照電子流導航教的原理，分析每個官能基的電子密度特性(是親核還是親電、是穩定還是活潑)，藉此推測這個分子可能怎麼跟身體內的生物分子產生交互作用，這個分析方法不需要『背過這個特定分子』，而是運用底層的化學邏輯去推導，這正是整個OrgChemMap課程設計想培養的核心能力。"}, {"num": 36, "q": "總結來說，醫學連結地圖想傳達的核心訊息是什麼？", "options": ["醫學知識跟有機化學是兩個完全獨立不相關的學科", "每一個臨床檢驗或生理現象背後，都是某個官能基跟電子流規律在分子層級的具體演出，理解規律比死記個別案例更重要", "只需要記住每個臨床檢驗的結果意義，不需要理解背後的化學原理", "官能基知識對臨床應用完全沒有實際幫助"], "answer": 1, "explain": "從胺基酸的雙性電荷、葡萄糖的環狀結構、脂肪酸的膜流動性、到藥物的標靶結合機轉，每一個臨床檢驗方法或生理現象，都不是孤立存在的『醫學知識』，而是某個具體的官能基特性跟電子流規律，在人體這個複雜系統上的真實演出，理解這些底層的化學原理，能讓學習者不只是被動記住一個個獨立的臨床事實，而是建立起一套能夠主動推理、應對各種新情境(像新藥物結構、新的代謝異常)的思考框架，這正是整個OrgChemMap，從官能基地圖一路延伸到醫學連結地圖，想傳達給每一位學習者最核心、最有長遠價值的訊息。"}]}], "ai_system": {"id": "ai_system", "zh": "AI系統", "icon": "🤖", "color": "#0d7d8c", "essence_zh": "AI系統把前面五張地圖（官能基、命名、電子流、反應、醫學連結）整理成你真正會拿來複習的格式：整體心智圖串起所有地圖的關係，Anki題庫讓你刷電子流規律不是刷反應式。", "overview_mindmap": {"central_zh": "OrgChemMap", "branches": [{"branch_zh": "官能基地圖", "children_zh": ["烷烯炔骨架家族", "醇醚含氧單鍵家族", "醛酮含氧雙鍵家族", "羧酸酯胺家族"]}, {"branch_zh": "命名導航", "children_zh": ["IUPAC核心規則", "碳鏈與支鏈", "官能基優先順序"]}, {"branch_zh": "電子流導航", "children_zh": ["親核攻擊", "親電攻擊", "加成反應", "消除反應"]}, {"branch_zh": "反應地圖", "children_zh": ["醇的反應", "醛酮的反應", "羧酸的反應", "酯的反應"]}, {"branch_zh": "醫學連結", "children_zh": ["胺基酸", "葡萄糖", "脂肪酸", "藥物結構"]}]}, "anki_cards": [{"q": "為什麼烯類跟炔類比烷類更容易發生反應？", "a": "因為烯炔類多出來的π電子雲鬆散裸露在外，容易被親電者搶走電子，而烷類全部是緊密的σ鍵電子分布均勻不易反應"}, {"q": "醇的OH氫為什麼比一般CH氫更容易展現酸性？", "a": "因為氧原子的電子密度比碳高很多，氧會把跟氫共用的電子往自己這邊拉，讓氫變得相對缺電子更容易被當成酸放出去"}, {"q": "醛跟酮哪一個比較容易被親核者攻擊？為什麼？", "a": "醛比酮更容易被攻擊，因為醛的羰基碳至少接一個氫(立體障礙較小)，酮的羰基碳兩邊都接碳(立體障礙較大且電子缺乏程度較弱)"}, {"q": "羧酸的酸性為什麼比醇強很多？", "a": "因為羧酸根(去掉氫後)的負電荷能同時分散在兩個氧原子上(共振穩定)，這個額外的穩定性讓羧酸更容易把氫放出去"}, {"q": "IUPAC命名第一步要做什麼？", "a": "先找出分子裡最長的連續碳鏈，決定母體名稱"}, {"q": "IUPAC編號方向選擇的原則是什麼？", "a": "從讓最重要的官能基拿到最小編號的那一端開始數，不是讓支鏈拿到最小編號"}, {"q": "當分子同時帶有羧酸基跟OH基時，IUPAC命名時誰當主角(字尾)？", "a": "羧酸基當主角決定字尾(-oic acid)，OH基退居變成字首(hydroxy-)，因為羧酸的優先順序比醇高"}, {"q": "親核者的核心特徵是什麼？", "a": "帶有多餘電子或孤對電子，電子密度豐富，主動把電子送出去攻擊電子不足的位置"}, {"q": "親電者的核心特徵是什麼？", "a": "帶正電或電子不足，主動去搶奪別的分子上電子豐富的位置(像雙鍵三鍵的π電子雲)"}, {"q": "加成反應對分子的原子總數有什麼影響？", "a": "原子總數會增加，因為新的原子團被加到原本的雙鍵或三鍵上，雙鍵三鍵打開變成單鍵"}, {"q": "消除反應對分子的原子總數有什麼影響？", "a": "原子總數會減少，因為要拿掉一個氫加一個離去基，原本的單鍵因此變成雙鍵"}, {"q": "消除反應在什麼環境下比較容易發生？跟取代反應的競爭關係是什麼？", "a": "強鹼、高溫的環境下傾向消除反應；強親核者、低溫的環境下則傾向取代反應，兩者是互相競爭的反應路徑"}, {"q": "一級醇、二級醇、三級醇氧化的差異是什麼？", "a": "一級醇可氧化成醛再到羧酸；二級醇只能氧化成酮就停止；三級醇因為碳上沒有氫可以拔，完全不能被氧化"}, {"q": "為什麼三級醇不能被氧化？", "a": "氧化反應需要碳上有氫被拔掉形成新的碳氧鍵，三級醇的碳已經被三個碳佔滿，沒有氫可以被拔"}, {"q": "酯的鹼性水解(皂化反應)為什麼是不可逆反應？", "a": "因為鹼性水解形成的羧酸根非常穩定(共振穩定)，不會輕易逆反應重新跟醇結合成酯"}, {"q": "葡萄糖在水溶液中主要以什麼形式存在？這個形式是怎麼形成的？", "a": "主要以環狀半縮醛形式存在，是分子內部某個OH基親核攻擊自己的醛基所形成的"}, {"q": "胺基酸在生理pH下呈現什麼電荷狀態？為什麼？", "a": "呈現雙性離子狀態，羧酸基放出氫變帶負電，胺基接受氫變帶正電，整體淨電荷為零"}, {"q": "為什麼不飽和脂肪酸在室溫下是液態，飽和脂肪酸是固態？", "a": "不飽和脂肪酸的雙鍵讓碳鏈彎曲，無法緊密堆疊排列；飽和脂肪酸碳鏈筆直，能緊密堆疊形成固態"}, {"q": "細胞膜為什麼能在體溫下維持流動性而不會凝固變硬？", "a": "因為磷脂質尾端使用不飽和脂肪酸，雙鍵造成的彎曲結構讓脂肪酸鏈無法緊密排列，維持膜的流動性"}, {"q": "Aspirin結構裡的酯鍵在體內扮演什麼角色？", "a": "酯鍵會被體內酵素水解，釋放出有活性的柳酸，這是典型前驅藥物(prodrug)利用酯水解釐放活性成分的設計策略"}, {"q": "糖化血色素(HbA1c)檢測背後的化學反應原理是什麼？", "a": "長期高血糖時葡萄糖的醛基緩慢跟蛋白質(血色素)上的胺基發生糖化反應，形成糖化終產物，這個反應比例反映過去2-3個月的平均血糖"}]}};
+let quizState = {}; // mapId -> { currentIdx, answers: {} }
+
+function go(id){ document.querySelector(id)?.scrollIntoView({behavior:'smooth'}) }
+
+// ---- PHILOSOPHY ----
+const phil = D.philosophy;
+document.getElementById('philosophy-box').innerHTML = `
+  <div class="philosophy-tagline">${phil.tagline_zh}</div>
+  <div class="philosophy-text">${phil.essence_zh}</div>
+  <div class="philosophy-text" style="margin-top:16px;font-weight:700;color:var(--navy)">${phil.core_principle_zh}</div>
+`;
+
+// ---- MAP SELECTOR ----
+const mapSelector = document.getElementById('map-selector');
+D.maps.forEach((m, idx) => {
+  const card = document.createElement('div');
+  card.className = 'map-card';
+  card.style.setProperty('--mc', m.color);
+  card.innerHTML = `
+    <div class="map-card-icon">${m.icon}</div>
+    <div class="map-card-zh">${m.zh}</div>
+  `;
+  card.onclick = () => {
+    document.querySelectorAll('.map-card').forEach(c => c.classList.remove('sel'));
+    card.classList.add('sel');
+    renderMapPanel(m);
+  };
+  mapSelector.appendChild(card);
+});
+
+function renderMapPanel(m) {
+  const panel = document.getElementById('map-panel');
+  panel.className = 'map-panel show';
+  panel.style.setProperty('--mc', m.color);
+
+  panel.innerHTML = `
+    <div class="mp-header" style="--mc:${m.color}">
+      <div class="mp-title-row">
+        <span class="mp-icon">${m.icon}</span>
+        <div class="mp-title">${m.zh}</div>
+      </div>
+      <div class="mp-essence">${m.essence_zh}</div>
+    </div>
+    <div class="mp-body">
+      <div class="mp-tabs" id="mp-tabs"></div>
+      <div id="mp-content"></div>
+    </div>
+  `;
+
+  const tabs = [
+    {key:'nodes', label:'📖 節點詳解'},
+    {key:'quiz', label:'📝 30題考古題'},
+  ];
+  const tabRow = document.getElementById('mp-tabs');
+  tabRow.innerHTML = tabs.map((t,ti) => `<button class="mp-tab ${ti===0?'act':''}" style="--mc:${m.color}" onclick="switchMpTab(this,'${t.key}')">${t.label}</button>`).join('');
+  tabRow.onclick = (e) => {
+    if (e.target.tagName !== 'BUTTON') return;
+    Array.from(tabRow.children).forEach(b => b.classList.remove('act'));
+    e.target.classList.add('act');
+  };
+
+  renderMpContent(m, 'nodes');
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function switchMpTab(btn, key) {
+  const m = currentMap;
+  renderMpContent(m, key);
+}
+
+let currentMap = null;
+
+function renderMpContent(m, key) {
+  currentMap = m;
+  const container = document.getElementById('mp-content');
+  if (key === 'nodes') {
+    container.innerHTML = `
+      <div class="node-grid" id="node-grid"></div>
+      <div class="node-detail" id="node-detail"></div>
+    `;
+    const nodeGrid = document.getElementById('node-grid');
+    m.nodes.forEach((n, ni) => {
+      const pill = document.createElement('div');
+      pill.className = 'node-pill';
+      pill.style.setProperty('--mc', m.color);
+      pill.innerHTML = `<div class="node-pill-zh">${n.zh}</div>`;
+      pill.onclick = () => {
+        document.querySelectorAll('.node-pill').forEach(p => p.classList.remove('sel'));
+        pill.classList.add('sel');
+        renderNodeDetail(n, m.color);
+      };
+      nodeGrid.appendChild(pill);
+    });
+    if (m.nodes.length) {
+      nodeGrid.children[0].classList.add('sel');
+      renderNodeDetail(m.nodes[0], m.color);
+    }
+  } else if (key === 'quiz') {
+    container.innerHTML = `<div id="quiz-area"></div>`;
+    if (!quizState[m.id]) quizState[m.id] = { currentIdx: 0, answers: {} };
+    renderQuiz(m);
+  }
+}
+
+function renderNodeDetail(n, color) {
+  const detail = document.getElementById('node-detail');
+  detail.className = 'node-detail show';
+  detail.style.setProperty('--mc', color);
+
+  const isMedical = !!n.functional_group_link_zh;
+  const pictureLabel = isMedical ? '🧪 對應官能基規律' : '🌍 自然規律畫面';
+  const pictureText = isMedical ? n.functional_group_link_zh : n.physical_picture_zh;
+  const linkLabel = isMedical ? '🩺 臨床應用' : '🩺 醫學連結';
+  const linkText = isMedical ? n.clinical_application_zh : n.medical_link_zh;
+
+  const mindmapHtml = n.mindmap_zh.map((step, i) => {
+    const arrow = i < n.mindmap_zh.length - 1 ? '<span class="nd-mm-arrow">→</span>' : '';
+    return `<span class="nd-mm-chip">${step}</span>${arrow}`;
+  }).join('');
+
+  let bodyHtml = `
+    <div class="nd-title">${n.zh}</div>
+    <div class="nd-card" style="--mc:${color}">
+      <div class="nd-label" style="--mc:${color}">💡 本質</div>
+      <div class="nd-text">${n.essence_zh}</div>
+    </div>
+    <div class="nd-card" style="--mc:${color}">
+      <div class="nd-label" style="--mc:${color}">${pictureLabel}</div>
+      <div class="nd-text">${pictureText}</div>
+    </div>
+    <div class="nd-trick">
+      <div class="nd-label">🔑 背誦理解秘訣</div>
+      <div class="nd-text">${n.trick_zh}</div>
+    </div>
+    <div class="nd-mindmap-box">
+      <div class="nd-mindmap-title">🧠 理解心智圖（重點串接）</div>
+      <div class="nd-mm-flow">${mindmapHtml}</div>
+    </div>
+  `;
+
+  if (!isMedical) {
+    bodyHtml += `
+    <div class="nd-card" style="--mc:${color}">
+      <div class="nd-label" style="--mc:${color}">📝 國考重點</div>
+      <div class="nd-text">${n.exam_point_zh}</div>
+    </div>`;
+  }
+
+  bodyHtml += `
+    <div class="nd-disease">
+      <div class="nd-label">${linkLabel}</div>
+      <div class="nd-text">${linkText}</div>
+    </div>
+  `;
+
+  detail.innerHTML = bodyHtml;
+}
+
+// ---- QUIZ ----
+function renderQuiz(m) {
+  const area = document.getElementById('quiz-area');
+  const state = quizState[m.id];
+  const quiz = m.quiz;
+  const idx = state.currentIdx;
+  const q = quiz[idx];
+  const answered = state.answers[idx] !== undefined;
+
+  const jumpHtml = quiz.map((qq, i) => {
+    let cls = 'quiz-jump-btn';
+    if (state.answers[i] !== undefined) cls += ' done';
+    if (i === idx) cls += ' current';
+    return `<button class="${cls}" style="--mc:${m.color}" onclick="jumpToQuestion('${m.id}',${i})">${i+1}</button>`;
+  }).join('');
+
+  const correctCount = Object.keys(state.answers).filter(k => state.answers[k] === quiz[k].answer).length;
+
+  area.innerHTML = `
+    <div class="quiz-toolbar">
+      <div class="quiz-progress">已作答 ${Object.keys(state.answers).length} / 30　正確 ${correctCount} 題</div>
+    </div>
+    <div class="quiz-jump" style="margin-bottom:16px">${jumpHtml}</div>
+    <div class="quiz-card" style="--mc:${m.color}">
+      <div class="quiz-num" style="--mc:${m.color}">第 ${idx+1} 題 / 30</div>
+      <div class="quiz-q">${q.q}</div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="quiz-explain" id="quiz-explain" style="--mc:${m.color}">
+        <div class="quiz-explain-label" style="--mc:${m.color}">💡 解析</div>
+        <div class="quiz-explain-text">${q.explain}</div>
+      </div>
+      <div class="quiz-nav">
+        <button class="quiz-nav-btn secondary" onclick="prevQuestion('${m.id}')" ${idx===0?'disabled':''}>← 上一題</button>
+        <button class="quiz-nav-btn" style="--mc:${m.color};background:${m.color}" onclick="nextQuestion('${m.id}')" ${idx===29?'disabled':''}>下一題 →</button>
+      </div>
+    </div>
+  `;
+
+  const optsContainer = document.getElementById('quiz-options');
+  q.options.forEach((opt, oi) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = opt;
+    if (answered) {
+      btn.classList.add('disabled');
+      if (oi === q.answer) btn.classList.add('correct');
+      else if (oi === state.answers[idx]) btn.classList.add('wrong');
+    } else {
+      btn.onclick = () => selectAnswer(m.id, idx, oi);
+    }
+    optsContainer.appendChild(btn);
+  });
+
+  if (answered) {
+    document.getElementById('quiz-explain').classList.add('show');
+  }
+}
+
+function selectAnswer(mapId, idx, optionIdx) {
+  quizState[mapId].answers[idx] = optionIdx;
+  renderQuiz(D.maps.find(m => m.id === mapId));
+}
+
+function jumpToQuestion(mapId, idx) {
+  quizState[mapId].currentIdx = idx;
+  renderQuiz(D.maps.find(m => m.id === mapId));
+}
+
+function nextQuestion(mapId) {
+  const state = quizState[mapId];
+  if (state.currentIdx < 29) state.currentIdx++;
+  renderQuiz(D.maps.find(m => m.id === mapId));
+}
+
+function prevQuestion(mapId) {
+  const state = quizState[mapId];
+  if (state.currentIdx > 0) state.currentIdx--;
+  renderQuiz(D.maps.find(m => m.id === mapId));
+}
+
+// Auto-init
+setTimeout(() => { document.querySelector('.map-card')?.click(); }, 100);
+</script>
+</body>
+</html>
